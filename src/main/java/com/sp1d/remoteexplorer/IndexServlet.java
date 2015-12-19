@@ -15,11 +15,16 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author sp1d
  */
-public class ExplorerServlet extends HttpServlet{
+public class IndexServlet extends HttpServlet{
+    private static final long serialVersionUID = -6641542318173215645L;
+    
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.getWriter().println("dfgdfgdfgdfg");
+        AppService.setupPanePaths(req);
+        System.out.println("RUNNING DOGET IN INDEX SERVLET");
+        req.getRequestDispatcher("mainpage.jsp").forward(req, resp);        
+        
     }
     
 }

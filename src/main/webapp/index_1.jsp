@@ -4,6 +4,7 @@
     Author     : sp1d
 --%>
 
+<%@page import="com.google.gson.Gson"%>
 <%@page import="java.util.concurrent.ExecutorCompletionService"%>
 <%@page import="java.util.concurrent.Future"%>
 <%@page import="java.util.Date"%>
@@ -35,31 +36,67 @@
     final String PATH_PARAM = "path";
     final PathMatcher pm = FileSystems.getDefault().getPathMatcher("glob:" + pRoot.toFile().getAbsolutePath() + "/**");
 
-    {
-        final ExecutorCompletionService ecs = new ExecutorCompletionService(
-                Executors.newSingleThreadExecutor());
-        
-    }
+    final ExecutorCompletionService ecs = new ExecutorCompletionService(
+            Executors.newSingleThreadExecutor());
+    final Gson gson = new Gson();
+    int tasks;
 
     enum Info {
+
         FILENAME, SIZE, DATE, ATTRIBUTES, PARENT
     }
 
     enum Pane {
+
         LEFT, RIGHT
     }
 
-    void ttt() {
-        ExecutorService es = Executors.newSingleThreadExecutor();
-        Future f = es.submit(new Runnable() {
+    enum TaskType {
 
-            @Override
-            public void run() {
+        COPY, MOVE
+    }
 
+    enum ErrorType {
+
+        NOERROR, FILEEXISTS
+    }
+
+    void addTask(TaskType taskType, HttpServletRequest request, Path pLeft, Path pRight) {
+
+        Future f = ecs.submit(createCallable(taskType, request, pLeft, pRight));
+        if (f != null) {
+            tasks++;
+        }
+    }
+
+    Callable<ErrorType> createCallable(TaskType taskType, HttpServletRequest request, Path pLeft, Path pRight) {
+        if (taskType == TaskType.COPY) {
+            return new copyCallable(request, pLeft, pRight);
+        } else {
+            return null;
+        }
+    }
+
+    class copyCallable implements Callable<ErrorType> {
+
+        HttpServletRequest request;
+        Path pLeft, pRight;
+
+        copyCallable(HttpServletRequest request, Path pLeft, Path pRight) {
+            this.request = request;
+            this.pLeft = pLeft;
+            this.pRight = pRight;
+        }
+
+        @Override
+        public ErrorType call() throws Exception {
+            try {
+                copy(StandardCopyOption.COPY_ATTRIBUTES, request, pLeft, pRight);
+                return ErrorType.NOERROR;
+            } catch (FileAlreadyExistsException e) {
+                return ErrorType.FILEEXISTS;
             }
         }
-        );
-
     }
 
 //  Path formatting
@@ -234,6 +271,22 @@
 //                            .appendTo($(document.body)) //it has to be added somewhere into the <body>
 //                            .submit();
                 });
+                
+                $('#btnmove').click(function () {
+                    var paneTo;
+                    if (pane === 'left') {
+                        paneTo = 'right'
+                    } else
+                        paneTo = 'left';
+                    var req = {
+                        from: selectedPath.text(),
+                        to: paneTo
+                    };
+                    $.post('<%= contextPath%>/move', req, function (data) {
+                        alert(data.toString());
+                    });
+//                   
+                });
             });
 
 
@@ -257,13 +310,14 @@
             Path pRight = getPanePath(Pane.RIGHT, request);
 
             if (request.getMethod().equals("POST") && request.getRequestURI().endsWith("copy")) {
+
+                addTask(TaskType.COPY, request, pLeft, pRight);
+//                    copy(StandardCopyOption.COPY_ATTRIBUTES, request, pLeft, pRight);
+                response.setContentType("application/json");
+                response.getWriter().write(gson.toJson(tasks));
+                response.getWriter().flush();
                 
-                try {                    
-                    copy(StandardCopyOption.COPY_ATTRIBUTES, request, pLeft, pRight);
-                } catch (FileAlreadyExistsException e) {
-//                    request.setAttribute("rewriteRequired", "yes");
-//                    request.getRequestDispatcher("").forward(request, response);
-                }
+
             }
         %>
 
@@ -380,7 +434,7 @@
         <nav class="navbar navbar-default navbar-fixed-bottom">
             <div class="container-fluid">
                 <button id="btncopy" type="button" class="btn btn-default navbar-btn">Copy</button>
-                <button type="button" class="btn btn-default navbar-btn" >Move</button>
+                <button id="btnmove" type="button" class="btn btn-default navbar-btn" >Move</button>
                 <button type="button" class="btn btn-default navbar-btn">Create</button>
                 <button type="button" class="btn btn-default navbar-btn">Delete</button>
                 <p class="navbar-text" id="test"></p>
