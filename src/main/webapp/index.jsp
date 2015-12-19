@@ -4,6 +4,7 @@
     Author     : sp1d
 --%>
 
+<%@page import="java.util.concurrent.ExecutorCompletionService"%>
 <%@page import="java.util.concurrent.Future"%>
 <%@page import="java.util.Date"%>
 <%@page import="java.util.concurrent.Callable"%>
@@ -30,11 +31,14 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
 <%!
-    final Path pRoot = Paths.get("/tmp");    
+    final Path pRoot = Paths.get("/tmp");
     final String PATH_PARAM = "path";
     final PathMatcher pm = FileSystems.getDefault().getPathMatcher("glob:" + pRoot.toFile().getAbsolutePath() + "/**");
+
     {
-        final ExecutorService es = Executors.newSingleThreadExecutor();    
+        final ExecutorCompletionService ecs = new ExecutorCompletionService(
+                Executors.newSingleThreadExecutor());
+        
     }
 
     enum Info {
@@ -44,25 +48,23 @@
     enum Pane {
         LEFT, RIGHT
     }
-    
-    void ttt(){
+
+    void ttt() {
         ExecutorService es = Executors.newSingleThreadExecutor();
         Future f = es.submit(new Runnable() {
 
             @Override
             public void run() {
-                
+
             }
         }
-                
-                
-);
-        
+        );
+
     }
 
 //  Path formatting
     String pf(Path path, Info info) {
-        return pf(path, info, null, null);        
+        return pf(path, info, null, null);
     }
 
 //  Path formatting
@@ -215,16 +217,22 @@
 
                 $('#btncopy').click(function () {
                     var paneTo;
-                    if (pane == 'left') {
+                    if (pane === 'left') {
                         paneTo = 'right'
                     } else
                         paneTo = 'left';
-
-                    $('<form action="copy" method="POST"/>')
-                            .append($('<input type="hidden" name="from" value="' + selectedPath.text() + '">'))
-                            .append($('<input type="hidden" name="to" value="' + paneTo + '">'))
-                            .appendTo($(document.body)) //it has to be added somewhere into the <body>
-                            .submit();
+                    var req = {
+                        from: selectedPath.text(),
+                        to: paneTo
+                    };
+                    $.post('<%= contextPath%>/copy', req, function (data) {
+                        alert(data.toString());
+                    });
+//                    $('<form action="copy" method="POST"/>')
+//                            .append($('<input type="hidden" name="from" value="' + selectedPath.text() + '">'))
+//                            .append($('<input type="hidden" name="to" value="' + paneTo + '">'))
+//                            .appendTo($(document.body)) //it has to be added somewhere into the <body>
+//                            .submit();
                 });
             });
 
@@ -234,7 +242,7 @@
         <title>Remote Explorer</title>
     </head>
     <body>
-        <%= date %>
+
 
 
 
@@ -249,11 +257,12 @@
             Path pRight = getPanePath(Pane.RIGHT, request);
 
             if (request.getMethod().equals("POST") && request.getRequestURI().endsWith("copy")) {
-                try {
+                
+                try {                    
                     copy(StandardCopyOption.COPY_ATTRIBUTES, request, pLeft, pRight);
                 } catch (FileAlreadyExistsException e) {
-                    request.setAttribute("rewriteRequired", "yes");
-                    request.getRequestDispatcher("").forward(request, response);
+//                    request.setAttribute("rewriteRequired", "yes");
+//                    request.getRequestDispatcher("").forward(request, response);
                 }
             }
         %>
@@ -366,14 +375,17 @@
                 </table>
             </div>
 
-        </div>        
+        </div>   
+
         <nav class="navbar navbar-default navbar-fixed-bottom">
             <div class="container-fluid">
                 <button id="btncopy" type="button" class="btn btn-default navbar-btn">Copy</button>
                 <button type="button" class="btn btn-default navbar-btn" >Move</button>
                 <button type="button" class="btn btn-default navbar-btn">Create</button>
                 <button type="button" class="btn btn-default navbar-btn">Delete</button>
-                <p id="test"></p>
+                <p class="navbar-text" id="test"></p>
+                <p class="navbar-text navbar-right"><span id="tasks" class="badge">2</span>&nbsp;Current tasks&nbsp;</p>
+
             </div>
         </nav>
 
