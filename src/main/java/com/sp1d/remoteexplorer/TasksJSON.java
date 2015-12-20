@@ -10,5 +10,8 @@ package com.sp1d.remoteexplorer;
  * @author sp1d
  */
 public class TasksJSON {
-    int tasks = 42;
+    
+    int tasks = 0;
+    
+    
 }

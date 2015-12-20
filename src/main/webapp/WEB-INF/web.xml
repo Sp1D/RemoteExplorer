@@ -7,6 +7,48 @@
     </servlet-mapping>
     
     <servlet>
+        <servlet-name>ContentServlet</servlet-name>
+        <servlet-class>com.sp1d.remoteexplorer.ContentServlet</servlet-class>        
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ContentServlet</servlet-name>
+        <url-pattern>/content</url-pattern>        
+    </servlet-mapping>
+    
+    
+    
+    <servlet>
+        <servlet-name>TasksServlet</servlet-name>
+        <servlet-class>com.sp1d.remoteexplorer.TasksServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>TasksServlet</servlet-name>
+        <url-pattern>/tasks</url-pattern>
+    </servlet-mapping>
+    
+    
+    <servlet>
+        <servlet-name>DeleteServlet</servlet-name>
+        <servlet-class>com.sp1d.remoteexplorer.DeleteServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DeleteServlet</servlet-name>
+        <url-pattern>/delete</url-pattern>
+    </servlet-mapping>
+    
+    
+    <servlet>
+        <servlet-name>CopyServlet</servlet-name>
+        <servlet-class>com.sp1d.remoteexplorer.CopyServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CopyServlet</servlet-name>
+        <url-pattern>/copy</url-pattern>
+    </servlet-mapping>
+    
+    
+    
+    <servlet>
         <servlet-name>MoveServlet</servlet-name>
         <servlet-class>com.sp1d.remoteexplorer.MoveServlet</servlet-class>
     </servlet>
@@ -14,7 +56,6 @@
         <servlet-name>MoveServlet</servlet-name>
         <url-pattern>/move</url-pattern>
     </servlet-mapping>
-    
     <servlet>
         <servlet-name>IndexServlet</servlet-name>
         <servlet-class>com.sp1d.remoteexplorer.IndexServlet</servlet-class>
@@ -23,8 +64,7 @@
         <servlet-name>IndexServlet</servlet-name>
         <url-pattern>/</url-pattern>
     </servlet-mapping>
-    
-<!--    <servlet>
+    <!--    <servlet>
         <servlet-name>ExplorerJSP</servlet-name>
         <jsp-file>/index.jsp</jsp-file>
     </servlet>
@@ -32,9 +72,6 @@
         <servlet-name>ExplorerJSP</servlet-name>
         <url-pattern>/</url-pattern>
     </servlet-mapping>-->
-    
-    
-
     <session-config>
         <session-timeout>
             30

@@ -4,6 +4,7 @@
     Author     : sp1d
 --%>
 
+<%@page import="com.sp1d.remoteexplorer.Attributes"%>
 <%@page import="com.sp1d.remoteexplorer.AppService"%>
 <%@page import="com.google.gson.Gson"%>
 <%@page import="java.util.concurrent.ExecutorCompletionService"%>
@@ -36,7 +37,7 @@
     final Path pRoot = Paths.get("/tmp");
     final String PATH_PARAM = "path";
     final PathMatcher pm = FileSystems.getDefault().getPathMatcher("glob:" + pRoot.toFile().getAbsolutePath() + "/**");
-    
+
     enum Info {
 
         FILENAME, SIZE, DATE, ATTRIBUTES, PARENT
@@ -46,7 +47,6 @@
 
         LEFT, RIGHT
     }
-
 
 //  Path formatting
     String pf(Path path, Info info) {
@@ -94,8 +94,6 @@
         }
     }
 
-    
-
     String pLink(Path path, String text) {
         if (!path.toFile().isDirectory()) {
             return path.normalize().toString();
@@ -107,9 +105,6 @@
         return sb.toString();
     }
 
-    
-
-    
 
 %>
 
@@ -118,77 +113,15 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">       
-        <link href="<%= contextPath%>/static/css/bootstrap.min.css" rel="stylesheet">
-        <link href="<%= contextPath%>/static/css/local.css" rel="stylesheet">                
+        <script>
+            var contextPath='<%= contextPath %>';
+        </script>           
         <script src="<%= contextPath%>/static/js/jquery-2.1.4.min.js"></script>
         <script src="<%= contextPath%>/static/js/bootstrap.min.js"></script>
-        <script>
-            var selectedItem;
-            var selectedPath;
-            var pane;
-
-            function select(param) {
-                selectedItem = param;
-                selectedPath = $(param).children('td.path').contents();
-                $('#test').text(pane + ':' + selectedPath.text());
-            }
-
-            $(function () {
-                $('.leftpane tr.item').click(function () {
-                    pane = 'left';
-                    $(selectedItem).toggleClass('selected');
-                    select($(this));
-                    $(this).toggleClass('selected');
-                });
-
-                $('.rightpane tr.item').click(function () {
-                    pane = 'right';
-                    $(selectedItem).toggleClass('selected');
-                    select($(this));
-                    $(this).toggleClass('selected');
-                });
-
-                $('#btncopy').click(function () {
-                    var paneTo;
-                    if (pane === 'left') {
-                        paneTo = 'right'
-                    } else
-                        paneTo = 'left';
-                    var req = {
-                        from: selectedPath.text(),
-                        to: paneTo
-                    };
-                    $.post('<%= contextPath%>/copy', req, function (data) {
-                        alert(data.toString());
-                    });
-//                    $('<form action="copy" method="POST"/>')
-//                            .append($('<input type="hidden" name="from" value="' + selectedPath.text() + '">'))
-//                            .append($('<input type="hidden" name="to" value="' + paneTo + '">'))
-//                            .appendTo($(document.body)) //it has to be added somewhere into the <body>
-//                            .submit();
-                });
-                
-                $('#btnmove').click(function () {
-                    var paneTo;
-                    if (pane === 'left') {
-                        paneTo = 'right'
-                    } else
-                        paneTo = 'left';
-                    var req = {
-                        from: selectedPath.text(),
-                        to: paneTo
-                    };
-                    $.post('<%= contextPath%>/move', req, function (data) {
-                        alert(data.toString());
-                    });
-//                   
-                });
-            });
-
-
-
-        </script>
+        <script src="<%= contextPath%>/static/js/remoteexplorer.js"></script>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">       
+        <link href="<%= contextPath%>/static/css/bootstrap.min.css" rel="stylesheet">
+        <link href="<%= contextPath%>/static/css/local.css" rel="stylesheet">                     
         <title>Remote Explorer</title>
     </head>
     <body>
@@ -203,14 +136,14 @@
             }
         %>
 
-        <% 
+        <%
 //            Path pLeft = (Path)session.getAttribute(AppService.Pane.LEFT.toString().toLowerCase());            
 //            Path pRight = (Path)session.getAttribute(AppService.Pane.RIGHT.toString().toLowerCase());         
-            
-            Path pLeft = AppService.getpLeft();
-            Path pRight = AppService.getpRight();
-            
-            
+//            Path pLeft = AppService.getpLeft();
+//            Path pRight = AppService.getpRight();
+            Attributes a = (Attributes) session.getAttribute("attributes");
+
+
         %>
 
         <!--        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
@@ -235,18 +168,17 @@
                 </script>-->
 
         <% //                        response.sendRedirect(request.getHeader("referer"));
-
         %>
 
         <%//            String reqPath = request.getRequestURI().replaceFirst(contextPath + "/", "");
 //            Path pCurrent = createSecuredPath(reqPath);
-        %>
+%>
 
         <div class="container-fluid">
             <div class="leftpane">
                 <table class="table table-condensed">
                     <thead>
-                        <tr><th colspan="4"><%= pLeft.toString()%></th></tr>
+                        <tr><th colspan="4"><%= a.leftPath.toString()%></th></tr>
                         <tr>
                             <th>Filename</th>
                             <th>Size</th>
@@ -258,10 +190,10 @@
                         <%
 // Writing <a link to parent directory
 
-                            if (!pLeft.equals(pRoot)) {
+                            if (!a.leftPath.equals(pRoot)) {
                         %>
                         <tr>                            
-                            <td><%= pf(pLeft.getParent(), Info.PARENT, request, Pane.LEFT)%></td>
+                            <td><%= pf(a.leftPath.getParent(), Info.PARENT, request, Pane.LEFT)%></td>
                             <td></td>
                             <td></td>
                             <td></td>
@@ -269,7 +201,7 @@
                         <%
                             }
 
-                            for (Path path : Files.newDirectoryStream(pLeft)) {
+                            for (Path path : a.leftListing) {
 
                         %>
                         <tr class="item">
@@ -282,11 +214,48 @@
                     </tbody>
                 </table>
             </div>
+            <!--
+                        <div class="rightpane">
+                            <table class="table table-condensed">
+                                <thead>
+                                    <tr><th colspan="4"><%= a.rightPath.toString()%></th></tr>
+                                    <tr>
+                                        <th>Filename</th>
+                                        <th>Size</th>
+                                        <th>Datetime</th>
+                                        <th>Permissions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+            <%
 
+                if (!a.rightPath.equals(pRoot)) {
+            %>
+            <tr >
+                <td><%= pf(a.rightPath.getParent(), Info.PARENT, request, Pane.RIGHT)%></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <%
+                }
+                for (Path path : a.rightListing) {
+            %>
+            <tr class="item">
+                <td class="path"><%= pf(path, Info.FILENAME, request, Pane.RIGHT)%></td>
+                <td><%= pf(path, Info.SIZE)%></td>
+                <td><%= pf(path, Info.DATE)%></td>
+                <td><%= pf(path, Info.ATTRIBUTES)%></td>
+            </tr>
+            <% }%>
+        </tbody>
+    </table>
+</div>
+            -->
             <div class="rightpane">
                 <table class="table table-condensed">
                     <thead>
-                        <tr><th colspan="4"><%= pRight.toString()%></th></tr>
+                        <tr><th colspan="4"><%= a.rightPath.toString()%></th></tr>
                         <tr>
                             <th>Filename</th>
                             <th>Size</th>
@@ -294,29 +263,8 @@
                             <th>Permissions</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <%
+                    <tbody id="rightbody">
 
-                            if (!pRight.equals(pRoot)) {
-                        %>
-                        <tr >
-                            <td><%= pf(pRight.getParent(), Info.PARENT, request, Pane.RIGHT)%></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                        </tr>
-                        <%
-                            }
-                            for (Path path
-                                    : Files.newDirectoryStream(pRight)) {
-                        %>
-                        <tr class="item">
-                            <td class="path"><%= pf(path, Info.FILENAME, request, Pane.RIGHT)%></td>
-                            <td><%= pf(path, Info.SIZE)%></td>
-                            <td><%= pf(path, Info.DATE)%></td>
-                            <td><%= pf(path, Info.ATTRIBUTES)%></td>
-                        </tr>
-                        <% }%>
                     </tbody>
                 </table>
             </div>
@@ -327,10 +275,10 @@
             <div class="container-fluid">
                 <button id="btncopy" type="button" class="btn btn-default navbar-btn">Copy</button>
                 <button id="btnmove" type="button" class="btn btn-default navbar-btn" >Move</button>
-                <button type="button" class="btn btn-default navbar-btn">Create</button>
-                <button type="button" class="btn btn-default navbar-btn">Delete</button>
+                <button id="btncreate" type="button" class="btn btn-default navbar-btn">Create</button>
+                <button id="btndelete" type="button" class="btn btn-default navbar-btn">Delete</button>
                 <p class="navbar-text" id="test"></p>
-                <p class="navbar-text navbar-right"><span id="tasks" class="badge">2</span>&nbsp;Current tasks&nbsp;</p>
+                <p class="navbar-text navbar-right"><span id="tasksBadge" class="badge">666</span>&nbsp;Current tasks&nbsp;</p>
 
             </div>
         </nav>

@@ -5,6 +5,7 @@
  */
 package com.sp1d.remoteexplorer;
 
+import com.sp1d.remoteexplorer.AppService.Pane;
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -15,16 +16,28 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author sp1d
  */
-public class IndexServlet extends HttpServlet{
+public class IndexServlet extends HttpServlet {
+
     private static final long serialVersionUID = -6641542318173215645L;
-    
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        AppService.setupPanePaths(req);
         System.out.println("RUNNING DOGET IN INDEX SERVLET");
-        req.getRequestDispatcher("mainpage.jsp").forward(req, resp);        
-        
+        AppService as = AppService.inst(req.getSession(true),AppService.class);                
+
+        Pane pane;
+        if (req.getParameterMap().containsKey(Pane.LEFT.toString().toLowerCase())) {
+            pane = Pane.LEFT;
+        } else if (req.getParameterMap().containsKey(Pane.RIGHT.toString().toLowerCase())) {
+            pane = Pane.RIGHT;
+        } else {
+            pane = Pane.BOTH;
+        }
+
+        as.setupPanes(req, pane);
+
+        req.getRequestDispatcher("mainpage.jsp").forward(req, resp);
+
     }
-    
+
 }

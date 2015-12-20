@@ -16,21 +16,21 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author sp1d
  */
-public class CopyServlet extends HttpServlet {
+public class DeleteServlet extends HttpServlet {
 
     private static final long serialVersionUID = 7622379705277351324L;
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        System.out.println("RUNNING DOPOST IN COPY SERVLET");
-        TaskExecutionService tes = new TaskExecutionService();
-        AppService as = AppService.inst(req.getSession(), AppService.class);
         
-        tes.addTask(TaskType.COPY, req, as.leftPath, as.rightPath);
+        TaskExecutionService tes = new TaskExecutionService();
+        Attributes a = Attributes.getInstance();
+        
+        tes.addTask(TaskType.DELETE, req, a.leftPath, a.rightPath);
         
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
-        resp.getWriter().write(AppService.gson.toJson(AppService.inst(req.getSession(), TasksJSON.class)));        
+        resp.getWriter().write(AppService.gson.toJson(TasksJSON.getInstance()));        
     }
 
 }

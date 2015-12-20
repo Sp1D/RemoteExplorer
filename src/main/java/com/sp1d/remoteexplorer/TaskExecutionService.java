@@ -7,6 +7,7 @@ package com.sp1d.remoteexplorer;
 
 import java.io.IOException;
 import java.nio.file.CopyOption;
+import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -22,12 +23,11 @@ import javax.servlet.http.HttpServletRequest;
  * @author sp1d
  */
 public class TaskExecutionService {
-    
-    
+
     final static private ExecutorCompletionService ecs = new ExecutorCompletionService(
             Executors.newSingleThreadExecutor());
-    
-    static private int tasks;
+
+    static private TasksJSON t = AppService.inst(req.getSession(), TasksJSON.class);
 
     enum Info {
 
@@ -41,25 +41,32 @@ public class TaskExecutionService {
 
     enum TaskType {
 
-        COPY, MOVE
+        COPY, MOVE, DELETE
     }
 
     enum ErrorType {
 
-        NOERROR, FILEEXISTS
+        NOERROR, FILEEXISTS, DIRNOTEMPTY
     }
 
     void addTask(TaskType taskType, HttpServletRequest request, Path pLeft, Path pRight) {
-
-        Future f = ecs.submit(createCallable(taskType, request, pLeft, pRight));
-        if (f != null) {
-            tasks++;
+        if (ecs.submit(createCallable(taskType, request, pLeft, pRight)) != null) {
+            t.tasks++;
         }
+    }
+
+    void pollTasks() {
+        while (ecs.poll() != null) {
+            t.tasks--;
+        }
+
     }
 
     Callable<ErrorType> createCallable(TaskType taskType, HttpServletRequest request, Path pLeft, Path pRight) {
         if (taskType == TaskType.COPY) {
             return new copyCallable(request, pLeft, pRight);
+        } else if (taskType == TaskType.DELETE) {
+            return new deleteCallable(request, pLeft, pRight);
         } else {
             return null;
         }
@@ -85,29 +92,70 @@ public class TaskExecutionService {
                 return ErrorType.FILEEXISTS;
             }
         }
-    }
-    
-    void copy(CopyOption option, HttpServletRequest request, Path pLeft, Path pRight) throws IOException {
-        Path copyFrom = null, copyTo = null;
 
-        if (request.getParameter("to").equalsIgnoreCase("right")) {
-            copyFrom = pLeft.resolve(request.getParameter("from"));
-            copyTo = pRight;
-        } else if (request.getParameter("to").equalsIgnoreCase("left")) {
-            copyFrom = pRight.resolve(request.getParameter("from"));
-            copyTo = pLeft;
-        }
+        void copy(CopyOption option, HttpServletRequest request, Path pLeft, Path pRight) throws IOException {
+            Path copyFrom = null, copyTo = null;
 
-        if (copyFrom == null || copyTo == null || !copyTo.toFile().isDirectory()) {
-            return;
-        }
-        copyTo = copyTo.resolve(copyFrom.getFileName());
+            if (request.getParameter("to").equalsIgnoreCase("right")) {
+                copyFrom = pLeft.resolve(request.getParameter("from"));
+                copyTo = pRight;
+            } else if (request.getParameter("to").equalsIgnoreCase("left")) {
+                copyFrom = pRight.resolve(request.getParameter("from"));
+                copyTo = pLeft;
+            }
+
+            if (copyFrom == null || copyTo == null || !copyTo.toFile().isDirectory()) {
+                return;
+            }
+            copyTo = copyTo.resolve(copyFrom.getFileName());
 
 //        Testing output
-        System.out.println(copyFrom);
-        System.out.println(copyTo);
+            System.out.println(copyFrom);
+            System.out.println(copyTo);
 
-        Files.copy(copyFrom, copyTo, option);
+            Files.copy(copyFrom, copyTo, option);
+        }
+    }
+
+    class deleteCallable implements Callable<ErrorType> {
+
+        HttpServletRequest request;
+        Path pLeft, pRight;
+
+        deleteCallable(HttpServletRequest request, Path pLeft, Path pRight) {
+            this.request = request;
+            this.pLeft = pLeft;
+            this.pRight = pRight;
+        }
+
+        @Override
+        public ErrorType call() throws Exception {
+            try {
+                delete(request, pLeft, pRight);
+                return ErrorType.NOERROR;
+            } catch (DirectoryNotEmptyException e) {
+                return ErrorType.FILEEXISTS;
+            }
+        }
+
+        void delete(HttpServletRequest request, Path pLeft, Path pRight) throws IOException {
+            Path deleteFrom = null;
+            
+            if (request.getParameter("from").equalsIgnoreCase("right")) {
+                deleteFrom = pRight.resolve(request.getParameter("to"));
+            } else if (request.getParameter("from").equalsIgnoreCase("left")) {
+                deleteFrom = pLeft.resolve(request.getParameter("to"));
+            }
+
+            if (deleteFrom == null) {
+                return;
+            }
+
+//        Testing output
+            System.out.println("deleting " + deleteFrom);
+
+            Files.delete(deleteFrom);
+        }
     }
 
 }

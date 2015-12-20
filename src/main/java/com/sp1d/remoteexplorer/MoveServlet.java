@@ -24,7 +24,8 @@ public class MoveServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 //        do move
         resp.setContentType("application/json");
-        resp.getWriter().write(AppService.gson.toJson(new TasksJSON()));        
+        resp.setCharacterEncoding("UTF-8");
+        resp.getWriter().write(AppService.gson.toJson(TasksJSON.getInstance()));             
     }
 
 }
