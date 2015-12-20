@@ -22,15 +22,14 @@ public class CopyServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        System.out.println("RUNNING DOPOST IN COPY SERVLET");
-        TaskExecutionService tes = new TaskExecutionService();
+        System.out.println("RUNNING POST IN COPY SERVLET");
+        
         AppService as = AppService.inst(req.getSession(), AppService.class);
+        TaskExecutionService tes = AppService.inst(req.getSession(), TaskExecutionService.class);
         
         tes.addTask(TaskType.COPY, req, as.leftPath, as.rightPath);
         
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding("UTF-8");
-        resp.getWriter().write(AppService.gson.toJson(AppService.inst(req.getSession(), TasksJSON.class)));        
+        as.sendTasksJSON(req, resp);        
     }
 
 }

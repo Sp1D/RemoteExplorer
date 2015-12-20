@@ -19,24 +19,31 @@ import javax.servlet.http.HttpServletResponse;
  * @author sp1d
  */
 public class ContentServlet extends HttpServlet {
+
     private static final long serialVersionUID = -5750499331621265964L;
-    
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
-        Attributes a = AppService.inst(req.getSession(), Attributes.class);
+        AppService as = AppService.inst(req.getSession(), AppService.class);
+
         DirectoryListingJSON listing = new DirectoryListingJSON(req.getSession());
-        
-        for (Path path : Files.newDirectoryStream(a.leftPath)) {
-            listing.add(path);
+        if (req.getParameter("right") != null) {            
+            if (!as.rightPath.equals(as.rootPath)) {
+                listing.addParent(as.rightPath.getParent());
+            }
+            for (Path path : Files.newDirectoryStream(as.rightPath)) {
+                listing.add(path);
+            }            
+        } else if (req.getParameter("left") != null) {            
+            for (Path path : Files.newDirectoryStream(as.leftPath)) {
+                listing.add(path);
+            }
         }
-        
+
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
-        resp.getWriter().write(gson.toJson(listing.getList()));       
+        resp.getWriter().write(gson.toJson(listing.getList()));
     }
-    
-    
-    
+
 }

@@ -7,6 +7,8 @@ package com.sp1d.remoteexplorer;
 
 import com.google.gson.Gson;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
@@ -18,6 +20,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 /**
@@ -35,7 +38,6 @@ public class AppService {
 //    static Path leftPath, rightPath;
 //    static List<Path> leftListing, rightListing;
     static Gson gson = new Gson();
-        
 
     enum Info {
 
@@ -46,7 +48,7 @@ public class AppService {
 
         LEFT, RIGHT, BOTH
     }
-    
+
 //    public static AppService instance(HttpSession sess) {
 //        AppService as = (AppService)sess.getAttribute("AppService");
 //        if (as == null) {
@@ -55,21 +57,27 @@ public class AppService {
 //        return as;
 //    }
     
+    
     public static <T> T inst(HttpSession sess, Class clazz) {
-        T inst = (T)sess.getAttribute(clazz.getSimpleName());
+        T inst = (T) sess.getAttribute(clazz.getSimpleName());
         if (inst == null) {
             try {
-                inst = (T)clazz.newInstance();
+                if (clazz.equals(TaskExecutionService.class)) {
+                    inst = (T) clazz.getConstructor(HttpSession.class).newInstance(sess);
+                } else {
+                    inst = (T) clazz.newInstance();
+                }
                 sess.setAttribute(clazz.getSimpleName(), inst);
-            } catch (InstantiationException | IllegalAccessException ex) {
+            } catch (InstantiationException | IllegalAccessException |
+                    NoSuchMethodException | InvocationTargetException ex) {
                 Logger.getLogger(Attributes.class.getName()).log(Level.SEVERE, null, ex);
-            } 
+            }
         }
         return inst;
     }
 
     Path createSecuredPath(String p) {
-        
+
         Path secured = rootPath;
         if (p != null) {
             try {
@@ -93,9 +101,9 @@ public class AppService {
     Path getPanePath(Pane pane, HttpServletRequest request) {
         String param = request.getParameter(pane.toString().toLowerCase());
 //        Path path = (Path) request.getSession().getAttribute(pane.toString().toLowerCase());  
-        Path path = pane == Pane.LEFT ? leftPath : 
-                pane == Pane.RIGHT ? rightPath : null;
-        
+        Path path = pane == Pane.LEFT ? leftPath
+                : pane == Pane.RIGHT ? rightPath : null;
+
         if (param != null) {
             path = createSecuredPath(param);
         } else if (path == null) {
@@ -116,14 +124,13 @@ public class AppService {
         }
         return result;
     }
-    
+
 //    void setSessionAttributes(HttpSession sess) {
 //        sess.setAttribute("attributes", a);
 //    }
-    
     void setupPanes(HttpServletRequest request, Pane pane) throws IOException {
         System.out.println("TRYING TO SETUP PANES PATHS, PANE: " + pane.toString());
-        
+
         switch (pane) {
             case LEFT:
                 leftPath = getPanePath(pane, request);
@@ -137,14 +144,19 @@ public class AppService {
                 leftPath = getPanePath(Pane.LEFT, request);
                 rightPath = getPanePath(Pane.RIGHT, request);
                 leftListing = getPaneListings(Pane.LEFT);
-                rightListing = getPaneListings(Pane.RIGHT);                
+                rightListing = getPaneListings(Pane.RIGHT);
         }
-        
+        System.out.println("left: "+leftPath);
+        System.out.println("right: "+rightPath);
+        System.out.println("root: "+rootPath);
 //        setSessionAttributes(request.getSession());
-
     }
-
     
+    void sendTasksJSON(HttpServletRequest req, HttpServletResponse resp) throws IOException{
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
+        resp.getWriter().write(AppService.gson.toJson(AppService.inst(req.getSession(), TasksJSON.class)));
+    }
 
     public Path getpLeft() {
         return leftPath;

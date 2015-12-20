@@ -17,6 +17,7 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 /**
  *
@@ -24,10 +25,11 @@ import javax.servlet.http.HttpServletRequest;
  */
 public class TaskExecutionService {
 
-    final static private ExecutorCompletionService ecs = new ExecutorCompletionService(
+    final private ExecutorCompletionService ecs = new ExecutorCompletionService(
             Executors.newSingleThreadExecutor());
-
-    static private TasksJSON t = AppService.inst(req.getSession(), TasksJSON.class);
+    private HttpSession session;
+    private TasksJSON t = AppService.inst(session, TasksJSON.class);
+    
 
     enum Info {
 
@@ -48,6 +50,12 @@ public class TaskExecutionService {
 
         NOERROR, FILEEXISTS, DIRNOTEMPTY
     }
+
+    public TaskExecutionService(HttpSession session) {
+        this.session = session;
+    }
+    
+    
 
     void addTask(TaskType taskType, HttpServletRequest request, Path pLeft, Path pRight) {
         if (ecs.submit(createCallable(taskType, request, pLeft, pRight)) != null) {

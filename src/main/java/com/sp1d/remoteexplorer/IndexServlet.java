@@ -23,7 +23,7 @@ public class IndexServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         System.out.println("RUNNING DOGET IN INDEX SERVLET");
-        AppService as = AppService.inst(req.getSession(true),AppService.class);                
+        AppService as = AppService.inst(req.getSession(),AppService.class);                
 
         Pane pane;
         if (req.getParameterMap().containsKey(Pane.LEFT.toString().toLowerCase())) {

@@ -22,15 +22,14 @@ public class DeleteServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        AppService as = AppService.inst(req.getSession(), AppService.class);
+        TaskExecutionService tes = AppService.inst(req.getSession(), TaskExecutionService.class);
         
-        TaskExecutionService tes = new TaskExecutionService();
-        Attributes a = Attributes.getInstance();
         
-        tes.addTask(TaskType.DELETE, req, a.leftPath, a.rightPath);
+        tes.addTask(TaskType.DELETE, req, as.leftPath, as.rightPath);
         
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding("UTF-8");
-        resp.getWriter().write(AppService.gson.toJson(TasksJSON.getInstance()));        
+        
+        as.sendTasksJSON(req, resp);                
     }
 
 }

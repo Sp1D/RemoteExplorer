@@ -23,11 +23,9 @@ import javax.servlet.http.HttpSession;
  * @author sp1d
  */
 public class DirectoryListingJSON {
-    private List<FileJSON> list = new ArrayList<>();
+    private final List<FileJSON> list;
     HttpSession sess;
-    Attributes a = AppService.inst(sess,Attributes.class);                
-
-        
+    AppService as;       
     
     enum Info {
 
@@ -41,6 +39,8 @@ public class DirectoryListingJSON {
 
     public DirectoryListingJSON(HttpSession sess) {
         this.sess = sess;
+        as = AppService.inst(sess,AppService.class);
+        list = new ArrayList<>();
     }
     
     
@@ -64,7 +64,7 @@ public class DirectoryListingJSON {
 
                     } else {
                         return "<a href=\""
-                                + request.getContextPath() + "?" + pane.toString().toLowerCase() + "=" + path.normalize().toString().replaceFirst(a.rootPath.toString() + "/", "")
+                                + request.getContextPath() + "?" + pane.toString().toLowerCase() + "=" + path.normalize().toString().replaceFirst(as.rootPath.toString() + "/", "")
                                 + "\">" + path.getName(path.getNameCount() - 1).normalize().toString() + "</a>";
                     }
                 case PARENT:
@@ -73,7 +73,7 @@ public class DirectoryListingJSON {
 
                     } else {
                         return "<a href=\""
-                                + request.getContextPath() + "?" + pane.toString().toLowerCase() + "=" + path.normalize().toString().replaceFirst(a.rootPath.toString() + "/", "")
+                                + request.getContextPath() + "?" + pane.toString().toLowerCase() + "=" + path.normalize().toString().replaceFirst(as.rootPath.toString() + "/", "")
                                 + "\">..</a>";
                     }
                 case DATE:
@@ -91,20 +91,33 @@ public class DirectoryListingJSON {
         }
     }
 
-    String pLink(Path path, String text) {
-        if (!path.toFile().isDirectory()) {
-            return path.normalize().toString();
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("<a");
-
-        return sb.toString();
-    }
+//    String pLink(Path path, String text) {
+//        if (!path.toFile().isDirectory()) {
+//            return path.normalize().toString();
+//        }
+//
+//        StringBuilder sb = new StringBuilder();
+//        sb.append("<a");
+//
+//        return sb.toString();
+//    }
 
     
-    public void add(Path path) {
-        list.add(new FileJSON(path.getFileName().toString()));
+    public void add(Path path) {        
+        list.add(new FileJSON()
+                .addName(pf(path, Info.FILENAME))
+                .addDate(pf(path, Info.DATE))
+                .addSize(pf(path, Info.SIZE))
+                .addPerm(pf(path, Info.ATTRIBUTES)));        
+    }
+    
+    public void addParent(Path path) {
+        list.add(new FileJSON()
+                .addName("..")
+                .addDate("")
+                .addSize("")
+                .addPerm(""));
+                
     }
 
     public List<FileJSON> getList() {

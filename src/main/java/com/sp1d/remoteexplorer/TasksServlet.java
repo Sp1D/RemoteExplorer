@@ -21,7 +21,7 @@ public class TasksServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        TaskExecutionService tes = new TaskExecutionService();
+        TaskExecutionService tes = AppService.inst(req.getSession(), TaskExecutionService.class);
         tes.pollTasks();
         
         resp.setContentType("application/json");
