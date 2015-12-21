@@ -5,6 +5,7 @@
  */
 package com.sp1d.remoteexplorer;
 
+import com.sp1d.remoteexplorer.AppService.Pane;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,59 +24,44 @@ import javax.servlet.http.HttpSession;
  * @author sp1d
  */
 public class DirectoryListingJSON {
+
     private final List<FileJSON> list;
-    HttpSession sess;
-    AppService as;       
-    
+//    private final String rootPath;
+    private final String leftPath;
+    private final String rightPath;
+    private String pane;
+
+    private final transient HttpSession sess;
+    private final transient AppService as;
+
     enum Info {
 
         FILENAME, SIZE, DATE, ATTRIBUTES, PARENT
     }
 
-    enum Pane {
-
-        LEFT, RIGHT
-    }
-
-    public DirectoryListingJSON(HttpSession sess) {
+    public DirectoryListingJSON(HttpSession sess, Pane pane) {
         this.sess = sess;
-        as = AppService.inst(sess,AppService.class);
+        as = AppService.inst(sess, AppService.class);
         list = new ArrayList<>();
-    }
-    
-    
-
-//  Path formatting
-    String pf(Path path, Info info) {
-        return pf(path, info, null, null);
+        leftPath = as.leftPath.toString();
+        rightPath = as.rightPath.toString();
+//        rootPath = as.rootPath.toString();
+        this.pane = pane.toString().toLowerCase();
     }
 
 //  Path formatting
 //  HttpServletRequest and Pane only needed for url resolution
-    String pf(Path path, Info info, HttpServletRequest request, Pane pane) {
+    String pf(Path path, Info info) {
 
         try {
             BasicFileAttributes attr = Files.readAttributes(path, BasicFileAttributes.class);
 
             switch (info) {
                 case FILENAME:
-                    if (!attr.isDirectory() || request == null || pane == null) {
-                        return path.getName(path.getNameCount() - 1).normalize().toString();
-
-                    } else {
-                        return "<a href=\""
-                                + request.getContextPath() + "?" + pane.toString().toLowerCase() + "=" + path.normalize().toString().replaceFirst(as.rootPath.toString() + "/", "")
-                                + "\">" + path.getName(path.getNameCount() - 1).normalize().toString() + "</a>";
-                    }
+//                        return path.getName(path.getNameCount() - 1).normalize().toString();
+                    return path.getFileName().toString();
                 case PARENT:
-                    if (!attr.isDirectory() || request == null || pane == null) {
-                        return "#";
-
-                    } else {
-                        return "<a href=\""
-                                + request.getContextPath() + "?" + pane.toString().toLowerCase() + "=" + path.normalize().toString().replaceFirst(as.rootPath.toString() + "/", "")
-                                + "\">..</a>";
-                    }
+                    return path.normalize().toString();
                 case DATE:
                     LocalDateTime ldt = LocalDateTime.ofInstant(attr.lastModifiedTime().toInstant(), ZoneId.systemDefault());
                     return ldt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
@@ -101,28 +87,25 @@ public class DirectoryListingJSON {
 //
 //        return sb.toString();
 //    }
-
-    
-    public void add(Path path) {        
+    public void add(Path path) {
         list.add(new FileJSON()
                 .addName(pf(path, Info.FILENAME))
                 .addDate(pf(path, Info.DATE))
                 .addSize(pf(path, Info.SIZE))
-                .addPerm(pf(path, Info.ATTRIBUTES)));        
+                .addPerm(pf(path, Info.ATTRIBUTES)));
     }
-    
+
     public void addParent(Path path) {
         list.add(new FileJSON()
-                .addName("..")
+                .addName(pf(path, Info.PARENT))
                 .addDate("")
-                .addSize("")
+                .addSize("&lt;PARENT&gt;")
                 .addPerm(""));
-                
+
     }
 
     public List<FileJSON> getList() {
         return list;
     }
-    
-    
+
 }

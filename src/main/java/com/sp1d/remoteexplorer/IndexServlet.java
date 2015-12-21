@@ -36,7 +36,12 @@ public class IndexServlet extends HttpServlet {
 
         as.setupPanes(req, pane);
 
-        req.getRequestDispatcher("mainpage.jsp").forward(req, resp);
+        if (pane == Pane.BOTH) {
+            req.getRequestDispatcher("mainpage.jsp").forward(req, resp);
+        } else {
+            req.getRequestDispatcher("content?"+pane.toString().toLowerCase()).forward(req, resp);            
+        }
+        
 
     }
 

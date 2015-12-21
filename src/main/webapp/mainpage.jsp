@@ -54,16 +54,6 @@
         <title>Remote Explorer</title>
     </head>
     <body>
-
-
-        <%
-            for (Map.Entry<String, String[]> me : request.getParameterMap().entrySet()) {
-                out.write(me.getKey() + " : " + me.getValue()[0]);
-                out.newLine();
-            }
-        %>
-
-
         <div class="container-fluid">
             <div class="leftpane">
                 <table class="table table-condensed">
@@ -101,13 +91,35 @@
 
         </div>   
 
+        <!-- Small modal -->
+
+        <div class="modal" id="newdirmodal" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        Create directory
+                    </div>
+                    <div class="modal-body">
+                        <label for="basic-url">Enter directory name</label>
+                        <div class="input-group">
+                            <span class="input-group-addon" id="newdircurrentpath">currentpath/</span>
+                            <input type="text" class="form-control" id="dirname">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="createdirbutton" type="button"  class="btn btn-default" data-dismiss="modal">Create</button>                        
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <nav class="navbar navbar-default navbar-fixed-bottom">
             <div class="container-fluid">
                 <button id="btncopy" type="button" class="btn btn-default navbar-btn">Copy</button>
                 <button id="btnmove" type="button" class="btn btn-default navbar-btn" >Move</button>
                 <button id="btncreate" type="button" class="btn btn-default navbar-btn">Create</button>
                 <button id="btndelete" type="button" class="btn btn-default navbar-btn">Delete</button>
-                <p class="navbar-text" id="test"></p>
+                <!--<p class="navbar-text" id="test"></p>-->
                 <p class="navbar-text navbar-right"><span id="tasksBadge" class="badge">666</span>&nbsp;Current tasks&nbsp;</p>
 
             </div>

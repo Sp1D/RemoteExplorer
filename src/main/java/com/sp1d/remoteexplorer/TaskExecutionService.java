@@ -12,6 +12,7 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.FileAttribute;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Executors;
@@ -25,16 +26,9 @@ import javax.servlet.http.HttpSession;
  */
 public class TaskExecutionService {
 
-    final private ExecutorCompletionService ecs = new ExecutorCompletionService(
-            Executors.newSingleThreadExecutor());
-    private HttpSession session;
-    private TasksJSON t = AppService.inst(session, TasksJSON.class);
-    
-
-    enum Info {
-
-        FILENAME, SIZE, DATE, ATTRIBUTES, PARENT
-    }
+    private final ExecutorCompletionService ecs;
+    private final HttpSession session;
+    private final TasksJSON t;
 
     enum Pane {
 
@@ -43,22 +37,24 @@ public class TaskExecutionService {
 
     enum TaskType {
 
-        COPY, MOVE, DELETE
+        COPY, MOVE, DELETE, CREATE
     }
 
     enum ErrorType {
 
-        NOERROR, FILEEXISTS, DIRNOTEMPTY
+        NOERROR, FILEEXISTS, DIRNOTEMPTY, DIREXISTS
     }
 
     public TaskExecutionService(HttpSession session) {
         this.session = session;
+        t = AppService.inst(session, TasksJSON.class);
+        ecs = new ExecutorCompletionService(Executors.newSingleThreadExecutor());
     }
     
     
 
     void addTask(TaskType taskType, HttpServletRequest request, Path pLeft, Path pRight) {
-        if (ecs.submit(createCallable(taskType, request, pLeft, pRight)) != null) {
+        if (ecs.submit(newCallable(taskType, request, pLeft, pRight)) != null) {
             t.tasks++;
         }
     }
@@ -70,12 +66,14 @@ public class TaskExecutionService {
 
     }
 
-    Callable<ErrorType> createCallable(TaskType taskType, HttpServletRequest request, Path pLeft, Path pRight) {
+    Callable<ErrorType> newCallable(TaskType taskType, HttpServletRequest request, Path pLeft, Path pRight) {
         if (taskType == TaskType.COPY) {
             return new copyCallable(request, pLeft, pRight);
         } else if (taskType == TaskType.DELETE) {
             return new deleteCallable(request, pLeft, pRight);
-        } else {
+        } else if (taskType == TaskType.CREATE) {
+            return new createCallable(request, pLeft, pRight);
+        } else  {
             return null;
         }
     }
@@ -118,13 +116,54 @@ public class TaskExecutionService {
             copyTo = copyTo.resolve(copyFrom.getFileName());
 
 //        Testing output
-            System.out.println(copyFrom);
-            System.out.println(copyTo);
+            System.out.println("copying from "+ copyFrom);
+            System.out.println("copying to " + copyTo);
 
             Files.copy(copyFrom, copyTo, option);
         }
     }
 
+    class createCallable implements Callable<ErrorType> {
+
+        HttpServletRequest request;
+        Path pLeft, pRight;
+
+        createCallable(HttpServletRequest request, Path pLeft, Path pRight) {
+            this.request = request;
+            this.pLeft = pLeft;
+            this.pRight = pRight;
+        }
+
+        @Override
+        public ErrorType call() throws Exception {
+            try {
+                create(request, pLeft, pRight);
+                return ErrorType.NOERROR;
+            } catch (FileAlreadyExistsException e) {
+                return ErrorType.DIREXISTS;
+            }
+        }
+
+        void create(HttpServletRequest request, Path pLeft, Path pRight) throws IOException {
+            Path createPath = null;
+            
+            if (request.getParameter("from").equalsIgnoreCase("right")) {
+                createPath = pRight.resolve(request.getParameter("to"));
+            } else if (request.getParameter("from").equalsIgnoreCase("left")) {
+                createPath = pLeft.resolve(request.getParameter("to"));
+            }
+
+            if (createPath == null) {
+                return;
+            }
+
+//        Testing output
+            System.out.println("creating " + createPath);
+            
+            Files.createDirectory(createPath);
+        }
+    }
+    
     class deleteCallable implements Callable<ErrorType> {
 
         HttpServletRequest request;

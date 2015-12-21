@@ -5,7 +5,9 @@
  */
 package com.sp1d.remoteexplorer;
 
+import com.sp1d.remoteexplorer.AppService.Pane;
 import static com.sp1d.remoteexplorer.AppService.gson;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -27,23 +29,30 @@ public class ContentServlet extends HttpServlet {
 
         AppService as = AppService.inst(req.getSession(), AppService.class);
 
-        DirectoryListingJSON listing = new DirectoryListingJSON(req.getSession());
-        if (req.getParameter("right") != null) {            
+        DirectoryListingJSON listing = null;
+        if (req.getParameter("right") != null) {
+            listing = new DirectoryListingJSON(req.getSession(), Pane.RIGHT);
             if (!as.rightPath.equals(as.rootPath)) {
                 listing.addParent(as.rightPath.getParent());
             }
             for (Path path : Files.newDirectoryStream(as.rightPath)) {
                 listing.add(path);
-            }            
-        } else if (req.getParameter("left") != null) {            
+            }
+        } else if (req.getParameter("left") != null) {
+            listing = new DirectoryListingJSON(req.getSession(), Pane.LEFT);
+            if (!as.leftPath.equals(as.rootPath)) {
+                listing.addParent(as.leftPath.getParent());
+            }
             for (Path path : Files.newDirectoryStream(as.leftPath)) {
                 listing.add(path);
             }
         }
 
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding("UTF-8");
-        resp.getWriter().write(gson.toJson(listing.getList()));
+        if (listing != null) {
+            resp.setContentType("application/json");
+            resp.setCharacterEncoding("UTF-8");
+            resp.getWriter().write(gson.toJson(listing));
+        }
     }
 
 }

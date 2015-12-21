@@ -5,7 +5,6 @@
  */
 package com.sp1d.remoteexplorer;
 
-import com.sp1d.remoteexplorer.TaskExecutionService.TaskType;
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -16,18 +15,21 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author sp1d
  */
-public class DeleteServlet extends HttpServlet {
-
-    private static final long serialVersionUID = 7622379705277351324L;
+public class CreateServlet extends HttpServlet{
+    private static final long serialVersionUID = 1526973095086629686L;
+    
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        System.out.println("RUNNING POST IN CREATE SERVLET");
+        
         AppService as = AppService.inst(req.getSession(), AppService.class);
-        TaskExecutionService tes = AppService.inst(req.getSession(), TaskExecutionService.class);
-                
-        tes.addTask(TaskType.DELETE, req, as.leftPath, as.rightPath);
-                
-        as.sendTasksJSON(req, resp);                
+        TaskExecutionService tes = AppService.inst(req.getSession(), TaskExecutionService.class);        
+        
+        tes.addTask(TaskExecutionService.TaskType.CREATE, req, as.leftPath, as.rightPath);
+        
+        as.sendTasksJSON(req, resp);        
     }
-
+    
+    
 }

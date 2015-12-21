@@ -25,7 +25,7 @@ public class CopyServlet extends HttpServlet {
         System.out.println("RUNNING POST IN COPY SERVLET");
         
         AppService as = AppService.inst(req.getSession(), AppService.class);
-        TaskExecutionService tes = AppService.inst(req.getSession(), TaskExecutionService.class);
+        TaskExecutionService tes = AppService.inst(req.getSession(), TaskExecutionService.class);        
         
         tes.addTask(TaskType.COPY, req, as.leftPath, as.rightPath);
         
