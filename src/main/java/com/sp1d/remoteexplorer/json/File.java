@@ -3,24 +3,24 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.sp1d.remoteexplorer;
+package com.sp1d.remoteexplorer.json;
 
 /**
  *
  * @author sp1d
  */
-public class FileJSON {
+public class File {
 
     String name;
     String date;
     String size;
     String perm;
 
-    public FileJSON() {
+    public File() {
     }
 
     
-    public FileJSON(String filename) {
+    public File(String filename) {
         this.name = filename;
         date = "01/01/1970";
         size = "15M";
@@ -28,22 +28,22 @@ public class FileJSON {
 
     }
     
-    public FileJSON addName(String name){
+    public File addName(String name){
         this.name = name;
         return this;
     }
     
-    public FileJSON addDate(String date){
+    public File addDate(String date){
         this.date = date;
         return this;
     }
     
-    public FileJSON addSize(String size){
+    public File addSize(String size){
         this.size = size;
         return this;
     }
     
-    public FileJSON addPerm(String perm){
+    public File addPerm(String perm){
         this.perm = perm;
         return this;
     }

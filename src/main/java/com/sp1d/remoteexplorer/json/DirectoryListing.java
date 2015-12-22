@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.sp1d.remoteexplorer;
+package com.sp1d.remoteexplorer.json;
 
+import com.sp1d.remoteexplorer.AppService;
 import com.sp1d.remoteexplorer.AppService.Pane;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -23,9 +24,9 @@ import javax.servlet.http.HttpSession;
  *
  * @author sp1d
  */
-public class DirectoryListingJSON {
+public class DirectoryListing {
 
-    private final List<FileJSON> list;
+    private final List<File> list;
 //    private final String rootPath;
     private final String leftPath;
     private final String rightPath;
@@ -39,7 +40,7 @@ public class DirectoryListingJSON {
         FILENAME, SIZE, DATE, ATTRIBUTES, PARENT
     }
 
-    public DirectoryListingJSON(HttpSession sess, Pane pane) {
+    public DirectoryListing(HttpSession sess, Pane pane) {
         this.sess = sess;
         as = AppService.inst(sess, AppService.class);
         list = new ArrayList<>();
@@ -88,7 +89,7 @@ public class DirectoryListingJSON {
 //        return sb.toString();
 //    }
     public void add(Path path) {
-        list.add(new FileJSON()
+        list.add(new File()
                 .addName(pf(path, Info.FILENAME))
                 .addDate(pf(path, Info.DATE))
                 .addSize(pf(path, Info.SIZE))
@@ -96,7 +97,7 @@ public class DirectoryListingJSON {
     }
 
     public void addParent(Path path) {
-        list.add(new FileJSON()
+        list.add(new File()
                 .addName(pf(path, Info.PARENT))
                 .addDate("")
                 .addSize("&lt;PARENT&gt;")
@@ -104,7 +105,7 @@ public class DirectoryListingJSON {
 
     }
 
-    public List<FileJSON> getList() {
+    public List<File> getList() {
         return list;
     }
 

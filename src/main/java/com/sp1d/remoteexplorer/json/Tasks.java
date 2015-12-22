@@ -3,10 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.sp1d.remoteexplorer;
+package com.sp1d.remoteexplorer.json;
 
+import com.google.gson.Gson;
+import com.sp1d.remoteexplorer.AppService;
+import com.sp1d.remoteexplorer.TaskExecutionService;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import javax.servlet.http.HttpSession;
@@ -15,21 +20,29 @@ import javax.servlet.http.HttpSession;
  *
  * @author sp1d
  */
-public class TasksJSON {
+public class Tasks {
 
     int count = 0;
     List<Task> tasks;
-    Set<Task> finished;
+    BlockingQueue<Task> finished;
     Set<Task> errors;
 
     private final transient TaskExecutionService tes;
     private final transient HttpSession session;
+    private final transient Gson gson;
 
-    public TasksJSON(HttpSession session) {
+    public enum TaskType {
+
+        COPY, MOVE, DELETE, CREATE
+    }
+    
+    public Tasks(HttpSession session) {
         this.tasks = new CopyOnWriteArrayList<Task>();
-        this.finished = new CopyOnWriteArraySet<Task>();
+        this.finished = new ArrayBlockingQueue<>(5);        
+        this.errors = new CopyOnWriteArraySet<Task>();
         this.session = session;
-        tes = AppService.inst(session, TaskExecutionService.class);
+        gson = new Gson();
+        tes = AppService.inst(session, TaskExecutionService.class);        
     }
 
     public void addTask(Task task) {
@@ -48,14 +61,18 @@ public class TasksJSON {
             if (task.getError() != TaskExecutionService.ErrorType.NOERROR) {
                 errors.add(task);
             } else {
-                finished.add(task);
+                if(!finished.offer(task)) {
+                    finished.poll();
+                    finished.offer(task);
+                }
             }
-        }        
+        } 
+        count = tasks.size();
     }
     
     public String getJSON() {
         pollTasks();
-        return AppService.gson.toJson(this);
+        return gson.toJson(this);
     }
 
 }

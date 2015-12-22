@@ -5,22 +5,19 @@
  */
 package com.sp1d.remoteexplorer;
 
-import java.io.IOException;
-import java.nio.file.CopyOption;
+import com.sp1d.remoteexplorer.json.Task;
+import com.sp1d.remoteexplorer.json.Tasks;
+import com.sp1d.remoteexplorer.json.Tasks.TaskType;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 /**
@@ -31,49 +28,47 @@ public class TaskExecutionService {
 
     private final ExecutorCompletionService ecs;
     private final HttpSession session;
-    private final TasksJSON t;
+    private final Tasks t;
     private final static String RESTRICTED_CHARS_POSIX = "(\\n|\\r|\\\\|\\/)";
     private final AppService as;
+    
 
-    enum TaskType {
-
-        COPY, MOVE, DELETE, CREATE
-    }
-
-    enum ErrorType {
+    public enum ErrorType {
 
         NOERROR, FILEEXISTS, DIRNOTEMPTY, DIREXISTS
     }
 
     public TaskExecutionService(HttpSession session) {
         this.session = session;
-        t = AppService.inst(session, TasksJSON.class);
+        t = AppService.inst(session, Tasks.class);
         ecs = new ExecutorCompletionService(Executors.newSingleThreadExecutor());
         as = AppService.inst(session, AppService.class);
     }
 
-    void addTask(Task task) {
+    public void addTask(Task task) {
         ecs.submit(newCallable(task));
     }
 
-    List<Task> pollTasks() {
+    public List<Task> pollTasks() {
         List<Task> tasks = new ArrayList<>();
         try {
             Future<Task> f;
-            do {
+            while (true) {
                 f = ecs.poll();
-                tasks.add(f.get());
-            } while (f != null);
+                if (f != null) {
+                    tasks.add(f.get());
+                } else break;
+            } 
         } catch (ExecutionException | InterruptedException e) {
         }
         return tasks;
     }
 
-    Callable<Task> newCallable(Task task) {
+    private Callable<Task> newCallable(Task task) {
         if (task.getType() == TaskType.COPY) {
             return new copyCallable(task);
         } else if (task.getType() == TaskType.MOVE) {
-            return null;
+            return new moveCallable(task);
         } else if (task.getType() == TaskType.DELETE) {
             return new deleteCallable(task);
         } else if (task.getType() == TaskType.CREATE) {
@@ -95,6 +90,27 @@ public class TaskExecutionService {
         public Task call() throws Exception {
             try {
                 Files.copy(task.getFrom(), task.getTo());
+                task.setError(ErrorType.NOERROR);
+            } catch (FileAlreadyExistsException e) {
+                task.setError(ErrorType.FILEEXISTS);
+            } finally {
+                return task;
+            }
+        }
+    }
+    
+    class moveCallable implements Callable<Task> {
+
+        private Task task;
+
+        moveCallable(Task task) {
+            this.task = task;
+        }
+
+        @Override
+        public Task call() throws Exception {
+            try {
+                Files.move(task.getFrom(), task.getTo());
                 task.setError(ErrorType.NOERROR);
             } catch (FileAlreadyExistsException e) {
                 task.setError(ErrorType.FILEEXISTS);

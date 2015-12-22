@@ -5,9 +5,7 @@
         <url-pattern>*.js</url-pattern>
         <url-pattern>*.css</url-pattern>
     </servlet-mapping>
-    
-    
-<!--    <servlet>
+    <!--    <servlet>
         <servlet-name>ExplorerJSP</servlet-name>
         <jsp-file>/index_1.jsp</jsp-file>
     </servlet>
@@ -15,9 +13,23 @@
         <servlet-name>ExplorerJSP</servlet-name>
         <url-pattern>/</url-pattern>
     </servlet-mapping>-->
-    
-    
     <servlet>
+        <servlet-name>ContentServlet</servlet-name>
+        <servlet-class>com.sp1d.remoteexplorer.servlet.ContentServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ContentServlet</servlet-name>
+        <url-pattern>/content</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>TasksServlet</servlet-name>
+        <servlet-class>com.sp1d.remoteexplorer.servlet.TasksServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>TasksServlet</servlet-name>
+        <url-pattern>/tasks</url-pattern>
+    </servlet-mapping>
+    <!--    <servlet>
         <servlet-name>CreateServlet</servlet-name>
         <servlet-class>com.sp1d.remoteexplorer.CreateServlet</servlet-class>
     </servlet>
@@ -25,28 +37,8 @@
         <servlet-name>CreateServlet</servlet-name>
         <url-pattern>/create</url-pattern>
     </servlet-mapping>
-    
-    
-    <servlet>
-        <servlet-name>ContentServlet</servlet-name>
-        <servlet-class>com.sp1d.remoteexplorer.ContentServlet</servlet-class>        
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>ContentServlet</servlet-name>
-        <url-pattern>/content</url-pattern>        
-    </servlet-mapping>
-    
-    
-    
-    <servlet>
-        <servlet-name>TasksServlet</servlet-name>
-        <servlet-class>com.sp1d.remoteexplorer.TasksServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>TasksServlet</servlet-name>
-        <url-pattern>/tasks</url-pattern>
-    </servlet-mapping>
-    
+        
+        
     
     <servlet>
         <servlet-name>DeleteServlet</servlet-name>
@@ -78,18 +70,15 @@
         <url-pattern>/move</url-pattern>
     </servlet-mapping>
     
-    
-    
-    
+    -->
     <servlet>
         <servlet-name>IndexServlet</servlet-name>
-        <servlet-class>com.sp1d.remoteexplorer.IndexServlet</servlet-class>
+        <servlet-class>com.sp1d.remoteexplorer.servlet.IndexServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>IndexServlet</servlet-name>
         <url-pattern>/</url-pattern>
     </servlet-mapping>
-    
     <session-config>
         <session-timeout>
             30

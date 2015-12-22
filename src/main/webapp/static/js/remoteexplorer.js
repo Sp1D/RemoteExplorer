@@ -8,33 +8,37 @@ var tasks = 0;
 var interval;
 var keeperRunning = false;
 
+
+
 function check() {
     $.getJSON('tasks', function (data) {
-        if (data.tasks < tasks) {
+        if (data.count < tasks) {
             getContent('left');
             getContent('right');
         }
-        tasks = data.tasks;
+        tasks = data.count;
         $('#tasksBadge').text(tasks);
-        
     });
-    if (tasks === 0) {
-        keeper(0);
+    if (tasks > 0) {
+        setTimeout(check, 500);
     }
+//    if (tasks === 0) {
+//        keeper(0);
+//    }
 }
 
-function keeper(count) {
-    tasks = count;
-    if (count === 0) {
-        clearInterval(interval);
-        keeperRunning = false;
-    } else if (!keeperRunning) {
-        check;
-        interval = setInterval(check, 1000);
-        keeperRunning = true;
-        
-    }
-}
+//function keeper(count) {
+//    tasks = count;
+//    if (count === 0) {
+//        clearInterval(interval);
+//        keeperRunning = false;
+//    } else if (!keeperRunning) {
+//        check;
+//        interval = setInterval(check, 500);
+//        keeperRunning = true;
+//        
+//    }
+//}
 
 function select(param) {
     selectedItem = param;
@@ -77,7 +81,7 @@ function parseContent(data, status, xhr) {
 
 
         } else {
-            
+
 //      It is regular file or directory link. Server gives us only filename (for perfomance issue)
 //      so we need to correct it to create relative link such "tmp/1/2" without secured root dir
             var pathString;
@@ -134,21 +138,22 @@ function clickchoose(elem, pan) {
     $(elem).toggleClass('selected');
 }
 
-function createDir(path){
-        var req = {
-            from: pane,
-            to: path
-        };
-        $.post(contextPath + '/create', req, function (data) {            
-            keeper(data.tasks);
-        });
-    }
-    
-function escape(s){
+function createDir(path) {
+    var req = {
+        from: pane,
+        to: path
+    };
+    $.post(contextPath + '/create', req, function (data) {
+//            keeper(data.count);
+        tasks++;
+        check(data);
+    });
+}
 
-    var escaped = /(\\x00|\\n|\\r|\\|'|"|\\x1a)/g; 
-    var str = new String(s);    
-    str = str.replace(escaped,'\\'+'$&');
+function escape(s) {
+    var escaped = /(\\x00|\\n|\\r|\\|'|"|\\x1a)/g;
+    var str = new String(s);
+    str = str.replace(escaped, '\\' + '$&');
     return str;
 }
 
@@ -158,11 +163,12 @@ $(function () {
 
     $('#tasksBadge').text(tasks);
 
-    if (tasks > 0) {
-        keeper(tasks);
-    }
-    
-    $('#createdirbutton').attr('onclick','createDir($(\'#dirname\').val())');
+    check();
+//    if (tasks > 0) {
+//        keeper(tasks);
+//    }
+
+    $('#createdirbutton').attr('onclick', 'createDir($(\'#dirname\').val())');
 
     $('#btncopy').click(function () {
         var paneTo;
@@ -174,27 +180,29 @@ $(function () {
             from: selectedPath.text(),
             to: paneTo
         };
-        $.post(contextPath + '/copy', req, function (data) {            
-            keeper(data.tasks);
+        $.post(contextPath + '/copy', req, function (data) {
+//            keeper(data.count);
+            tasks++;
+            check(data);
         });
 
     });
 
     $('#btnmove').click(function () {
-//                    var paneTo;
-//                    if (pane === 'left') {
-//                        paneTo = 'right'
-//                    } else
-//                        paneTo = 'left';
-//                    var req = {
-//                        from: selectedPath.text(),
-//                        to: paneTo
-//                    };
-//                    $.post('<%= contextPath%>/move', req, function (data) {
-//                        alert(data.toString());
-//                    });
-//                    
-        
+        var paneTo;
+        if (pane === 'left') {
+            paneTo = 'right';
+        } else
+            paneTo = 'left';
+        var req = {
+            from: selectedPath.text(),
+            to: paneTo
+        };
+        $.post(contextPath + '/move', req, function (data) {
+            tasks++;
+            check(data);
+        });
+
 
     });
 
@@ -203,24 +211,26 @@ $(function () {
             from: pane,
             to: selectedPath.text()
         };
-        $.post(contextPath + '/delete', req, function (data) {            
-            keeper(data.tasks);
+        $.post(contextPath + '/delete', req, function (data) {
+//            keeper(data.count);
+            tasks++;
+            check(data);
         });
 //                   
     });
-    
-    
-    
-    $('#btncreate').click(function (){
+
+
+
+    $('#btncreate').click(function () {
         var currentPath;
         if (pane !== 'left' && pane !== 'right') {
             alert('Select pane please');
             return;
         }
         if (pane === 'left') {
-            currentPath = leftPath + '/';            
+            currentPath = leftPath + '/';
         } else if (pane === 'right') {
-            currentPath = rightPath + '/';            
+            currentPath = rightPath + '/';
         }
         $('#newdircurrentpath').text(currentPath);
         $('#newdirmodal').modal('show');

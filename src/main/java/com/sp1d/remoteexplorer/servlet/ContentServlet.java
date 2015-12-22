@@ -3,11 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.sp1d.remoteexplorer;
+package com.sp1d.remoteexplorer.servlet;
 
+import com.google.gson.Gson;
+import com.sp1d.remoteexplorer.AppService;
 import com.sp1d.remoteexplorer.AppService.Pane;
-import static com.sp1d.remoteexplorer.AppService.gson;
-
+import com.sp1d.remoteexplorer.json.DirectoryListing;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,15 +24,16 @@ import javax.servlet.http.HttpServletResponse;
 public class ContentServlet extends HttpServlet {
 
     private static final long serialVersionUID = -5750499331621265964L;
+    private static final Gson gson = new Gson();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
         AppService as = AppService.inst(req.getSession(), AppService.class);
 
-        DirectoryListingJSON listing = null;
+        DirectoryListing listing = null;
         if (req.getParameter("right") != null) {
-            listing = new DirectoryListingJSON(req.getSession(), Pane.RIGHT);
+            listing = new DirectoryListing(req.getSession(), Pane.RIGHT);
             if (!as.rightPath.equals(as.rootPath)) {
                 listing.addParent(as.rightPath.getParent());
             }
@@ -39,7 +41,7 @@ public class ContentServlet extends HttpServlet {
                 listing.add(path);
             }
         } else if (req.getParameter("left") != null) {
-            listing = new DirectoryListingJSON(req.getSession(), Pane.LEFT);
+            listing = new DirectoryListing(req.getSession(), Pane.LEFT);
             if (!as.leftPath.equals(as.rootPath)) {
                 listing.addParent(as.leftPath.getParent());
             }
@@ -48,10 +50,12 @@ public class ContentServlet extends HttpServlet {
             }
         }
 
-        if (listing != null) {
-            resp.setContentType("application/json");
-            resp.setCharacterEncoding("UTF-8");
-            resp.getWriter().write(gson.toJson(listing));
+        if (listing != null) {            
+            as.sendJSON(resp, gson.toJson(listing));
+//            
+//            resp.setContentType("application/json");
+//            resp.setCharacterEncoding("UTF-8");
+//            resp.getWriter().write(gson.toJson(listing));
         }
     }
 

@@ -5,9 +5,9 @@
  */
 package com.sp1d.remoteexplorer;
 
+import com.sp1d.remoteexplorer.json.Tasks;
 import com.google.gson.Gson;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -17,8 +17,6 @@ import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -34,31 +32,18 @@ public class AppService {
     public final Path rootPath = Paths.get("/tmp");
     final PathMatcher pm = FileSystems.getDefault().getPathMatcher("glob:" + rootPath.toFile().getAbsolutePath() + "/**");
     static Gson gson = new Gson();
-    
-    enum Info {
-
-        FILENAME, SIZE, DATE, ATTRIBUTES, PARENT
-    }
-
+        
     public enum Pane {
 
         LEFT, RIGHT, BOTH;        
     }
-
-//    public static AppService instance(HttpSession sess) {
-//        AppService as = (AppService)sess.getAttribute("AppService");
-//        if (as == null) {
-//            as = new AppService();
-//        }
-//        return as;
-//    }
     
     
     public static <T> T inst(HttpSession sess, Class clazz) {
         T inst = (T) sess.getAttribute(clazz.getSimpleName());
         if (inst == null) {
             try {
-                if (clazz.equals(TaskExecutionService.class) || clazz.equals(TasksJSON.class)) {
+                if (clazz.equals(TaskExecutionService.class) || clazz.equals(Tasks.class)) {
                     inst = (T) clazz.getConstructor(HttpSession.class).newInstance(sess);
                 } else {
                     inst = (T) clazz.newInstance();
@@ -66,13 +51,13 @@ public class AppService {
                 sess.setAttribute(clazz.getSimpleName(), inst);
             } catch (InstantiationException | IllegalAccessException |
                     NoSuchMethodException | InvocationTargetException ex) {
-                Logger.getLogger(Attributes.class.getName()).log(Level.SEVERE, null, ex);
+                
             }
         }
         return inst;
     }
 
-    Path createSecuredPath(String p) {
+    private Path createSecuredPath(String p) {
 
         Path secured = rootPath;
         if (p != null) {
@@ -94,7 +79,7 @@ public class AppService {
         return secured;
     }
 
-    Path getPanePath(Pane pane, HttpServletRequest request) {
+    private Path getPanePath(Pane pane, HttpServletRequest request) {
         String param = request.getParameter(pane.toString().toLowerCase());
 //        Path path = (Path) request.getSession().getAttribute(pane.toString().toLowerCase());  
         Path path = pane == Pane.LEFT ? leftPath
@@ -109,7 +94,7 @@ public class AppService {
         return path;
     }
 
-    List<Path> getPaneListings(Pane pane) throws IOException {
+    private List<Path> getPaneListings(Pane pane) throws IOException {
         List<Path> result = new ArrayList<>();
         Path scanPath = pane == Pane.LEFT ? leftPath
                 : pane == Pane.RIGHT ? rightPath : null;
@@ -121,10 +106,7 @@ public class AppService {
         return result;
     }
 
-//    void setSessionAttributes(HttpSession sess) {
-//        sess.setAttribute("attributes", a);
-//    }
-    void setupPanes(HttpServletRequest request, Pane pane) throws IOException {
+    public void setupPanes(HttpServletRequest request, Pane pane) throws IOException {
         System.out.println("TRYING TO SETUP PANES PATHS, PANE: " + pane.toString());
 
         switch (pane) {
@@ -145,10 +127,9 @@ public class AppService {
         System.out.println("left: "+leftPath);
         System.out.println("right: "+rightPath);
         System.out.println("root: "+rootPath);
-//        setSessionAttributes(request.getSession());
     }
     
-    void sendJSON(HttpServletResponse resp, String json) throws IOException{
+    public void sendJSON(HttpServletResponse resp, String json) throws IOException{
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
         resp.getWriter().write(json);

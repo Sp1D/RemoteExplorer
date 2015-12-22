@@ -4,32 +4,8 @@
     Author     : sp1d
 --%>
 
-<%@page import="com.sp1d.remoteexplorer.Attributes"%>
+
 <%@page import="com.sp1d.remoteexplorer.AppService"%>
-<%@page import="com.google.gson.Gson"%>
-<%@page import="java.util.concurrent.ExecutorCompletionService"%>
-<%@page import="java.util.concurrent.Future"%>
-<%@page import="java.util.Date"%>
-<%@page import="java.util.concurrent.Callable"%>
-<%@page import="java.util.concurrent.ExecutorService"%>
-<%@page import="java.util.concurrent.Executors"%>
-<%@page import="java.nio.file.FileAlreadyExistsException"%>
-<%@page import="java.nio.file.StandardCopyOption"%>
-<%@page import="java.nio.file.CopyOption"%>
-<%@page import="java.util.Map"%>
-<%--<%@page import="javax.enterprise.context.spi.Context"%>--%>
-<%@page import="java.nio.file.InvalidPathException"%>
-<%@page import="java.nio.file.PathMatcher"%>
-<%@page import="java.nio.file.FileSystems"%>
-<%@page import="java.nio.file.attribute.PosixFilePermissions"%>
-<%@page import="java.nio.file.attribute.BasicFileAttributes"%>
-<%@page import="java.io.IOException"%>
-<%@page import="java.time.format.DateTimeFormatter"%>
-<%@page import="java.time.ZoneId"%>
-<%@page import="java.time.LocalDateTime"%>
-<%@page import="java.nio.file.Files"%>
-<%@page import="java.nio.file.Path"%>
-<%@page import="java.nio.file.Paths"%>
 <%@page trimDirectiveWhitespaces="true" %>
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 

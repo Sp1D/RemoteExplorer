@@ -3,10 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.sp1d.remoteexplorer;
+package com.sp1d.remoteexplorer.json;
+
 
 import com.sp1d.remoteexplorer.TaskExecutionService.ErrorType;
-import com.sp1d.remoteexplorer.TaskExecutionService.TaskType;
+import com.sp1d.remoteexplorer.json.Tasks.TaskType;
+
 import java.nio.file.Path;
 import java.util.Objects;
 import javax.servlet.http.HttpServletRequest;
@@ -19,28 +21,34 @@ public class Task {
 
     private TaskType type;
     private ErrorType error;
+//    From and To in string for json 
+   private String f, t;
 
 //    Source path in copy, move operations. Source panel (left or right) in create and delete operations
-    private Path from;
+    private transient Path from;
 
 //    Destination path in copy, move, create, delete operations
-    private Path to;
+    private transient Path to;
     
     private final transient long creationTime;
     private final static transient String RESTRICTED_CHARS_POSIX = "(\\n|\\r|\\\\|\\/)";
 
         
     public Task(TaskType type, HttpServletRequest req, Path lePanePath, Path riPanePath) {
+        this.type = type;
         if (type == TaskType.COPY) {
             initCopyTask(type, req, lePanePath, riPanePath);
         } else if (type == TaskType.MOVE) {
-
+            initMoveTask(type, req, lePanePath, riPanePath);
         } else if (type == TaskType.CREATE) {
             initCreateTask(type, req, lePanePath, riPanePath);
         } else if (type == TaskType.DELETE) {
             initDeleteTask(type, req, lePanePath, riPanePath);
         } 
+        
         creationTime = System.currentTimeMillis();
+        this.f = from != null ? from.toString() : "";
+        this.t = to != null ? to.toString() : "";
     }
 
     private void initCopyTask(TaskType type, HttpServletRequest req, Path lePanePath, Path riPanePath) {
@@ -58,10 +66,29 @@ public class Task {
             return;
         }
         copyTo = copyTo.resolve(copyFrom.getFileName());
-
-        this.type = type;
+        
         this.from = copyFrom;
         this.to = copyTo;
+    }
+    
+    private void initMoveTask(TaskType type, HttpServletRequest req, Path lePanePath, Path riPanePath) {
+        Path moveFrom = null, moveTo = null;
+
+        if (req.getParameter("to").equalsIgnoreCase("right")) {
+            moveTo = riPanePath;
+            moveFrom = lePanePath.resolve(req.getParameter("from"));
+        } else if (req.getParameter("to").equalsIgnoreCase("left")) {
+            moveTo = lePanePath;
+            moveFrom = riPanePath.resolve(req.getParameter("from"));
+        }
+
+        if (moveFrom == null || moveTo == null || !moveTo.toFile().isDirectory()) {
+            return;
+        }
+        moveTo = moveTo.resolve(moveFrom.getFileName());
+        
+        this.from = moveFrom;
+        this.to = moveTo;
     }
 
     private void initCreateTask(TaskType type, HttpServletRequest req, Path lePanePath, Path riPanePath) {
@@ -94,7 +121,7 @@ public class Task {
         if (deleteFrom == null) {
             return;
         }
-        this.to = deleteFrom;
+        this.to = deleteFrom;        
     }
 
     public TaskType getType() {
