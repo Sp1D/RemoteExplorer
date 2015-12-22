@@ -24,9 +24,12 @@ public class MoveServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 //        do move
         AppService as = AppService.inst(req.getSession(), AppService.class);
-        TaskExecutionService tes = AppService.inst(req.getSession(), TaskExecutionService.class);
+        TaskExecutionService tes = AppService.inst(req.getSession(), TaskExecutionService.class);        
+        TasksJSON tasks = AppService.inst(req.getSession(), TasksJSON.class);
+                
+        tasks.addTask(new Task(TaskExecutionService.TaskType.MOVE, req, as.leftPath, as.rightPath));
         
-        as.sendTasksJSON(req, resp);                     
+        as.sendJSON(resp, tasks.getJSON());                   
     }
 
 }

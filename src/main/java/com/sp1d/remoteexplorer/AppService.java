@@ -32,13 +32,9 @@ public class AppService {
     public Path leftPath, rightPath;
     public List<Path> leftListing, rightListing;
     public final Path rootPath = Paths.get("/tmp");
-//    final static Path rootPath = Paths.get("/tmp");
-//    final static String PATH_PARAM = "path";
     final PathMatcher pm = FileSystems.getDefault().getPathMatcher("glob:" + rootPath.toFile().getAbsolutePath() + "/**");
-//    static Path leftPath, rightPath;
-//    static List<Path> leftListing, rightListing;
     static Gson gson = new Gson();
-
+    
     enum Info {
 
         FILENAME, SIZE, DATE, ATTRIBUTES, PARENT
@@ -46,7 +42,7 @@ public class AppService {
 
     public enum Pane {
 
-        LEFT, RIGHT, BOTH
+        LEFT, RIGHT, BOTH;        
     }
 
 //    public static AppService instance(HttpSession sess) {
@@ -62,7 +58,7 @@ public class AppService {
         T inst = (T) sess.getAttribute(clazz.getSimpleName());
         if (inst == null) {
             try {
-                if (clazz.equals(TaskExecutionService.class)) {
+                if (clazz.equals(TaskExecutionService.class) || clazz.equals(TasksJSON.class)) {
                     inst = (T) clazz.getConstructor(HttpSession.class).newInstance(sess);
                 } else {
                     inst = (T) clazz.newInstance();
@@ -152,10 +148,10 @@ public class AppService {
 //        setSessionAttributes(request.getSession());
     }
     
-    void sendTasksJSON(HttpServletRequest req, HttpServletResponse resp) throws IOException{
+    void sendJSON(HttpServletResponse resp, String json) throws IOException{
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
-        resp.getWriter().write(AppService.gson.toJson(AppService.inst(req.getSession(), TasksJSON.class)));
+        resp.getWriter().write(json);
     }
 
     public Path getpLeft() {

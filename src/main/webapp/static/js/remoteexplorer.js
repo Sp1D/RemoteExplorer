@@ -90,7 +90,7 @@ function parseContent(data, status, xhr) {
             }
 //      It is directory. Will show with <a> link
             if (file.size.toString() === '&lt;DIR&gt;') {
-                fileString = '<a href="#" onclick="changedir(&apos;' + pathString + '&apos;,&apos;' + pane + '&apos;)">' + file.name + '</a>';
+                fileString = '<a href="#" onclick="changedir(\'' + escape(pathString) + '\',\'' + pane + '\')">' + file.name + '</a>';
             }
 //        Or regular FILE
             else
@@ -143,6 +143,14 @@ function createDir(path){
             keeper(data.tasks);
         });
     }
+    
+function escape(s){
+
+    var escaped = /(\\x00|\\n|\\r|\\|'|"|\\x1a)/g; 
+    var str = new String(s);    
+    str = str.replace(escaped,'\\'+'$&');
+    return str;
+}
 
 $(function () {
     getContent('right');

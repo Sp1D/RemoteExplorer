@@ -24,11 +24,12 @@ public class CreateServlet extends HttpServlet{
         System.out.println("RUNNING POST IN CREATE SERVLET");
         
         AppService as = AppService.inst(req.getSession(), AppService.class);
-        TaskExecutionService tes = AppService.inst(req.getSession(), TaskExecutionService.class);        
+        TaskExecutionService tes = AppService.inst(req.getSession(), TaskExecutionService.class);    
+        TasksJSON tasks = AppService.inst(req.getSession(), TasksJSON.class);
+                
+        tasks.addTask(new Task(TaskExecutionService.TaskType.CREATE, req, as.leftPath, as.rightPath));
         
-        tes.addTask(TaskExecutionService.TaskType.CREATE, req, as.leftPath, as.rightPath);
-        
-        as.sendTasksJSON(req, resp);        
+        as.sendJSON(resp, tasks.getJSON());
     }
     
     

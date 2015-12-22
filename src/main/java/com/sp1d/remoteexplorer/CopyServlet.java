@@ -5,7 +5,6 @@
  */
 package com.sp1d.remoteexplorer;
 
-import com.sp1d.remoteexplorer.TaskExecutionService.TaskType;
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -25,11 +24,12 @@ public class CopyServlet extends HttpServlet {
         System.out.println("RUNNING POST IN COPY SERVLET");
         
         AppService as = AppService.inst(req.getSession(), AppService.class);
-        TaskExecutionService tes = AppService.inst(req.getSession(), TaskExecutionService.class);        
+        TaskExecutionService tes = AppService.inst(req.getSession(), TaskExecutionService.class);
+        TasksJSON tasks = AppService.inst(req.getSession(), TasksJSON.class);
+                
+        tasks.addTask(new Task(TaskExecutionService.TaskType.COPY, req, as.leftPath, as.rightPath));
         
-        tes.addTask(TaskType.COPY, req, as.leftPath, as.rightPath);
-        
-        as.sendTasksJSON(req, resp);        
+        as.sendJSON(resp, tasks.getJSON());
     }
 
 }

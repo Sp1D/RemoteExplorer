@@ -22,11 +22,10 @@ public class TasksServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         AppService as = AppService.inst(req.getSession(), AppService.class);
-        TaskExecutionService tes = AppService.inst(req.getSession(), TaskExecutionService.class);
+        TaskExecutionService tes = AppService.inst(req.getSession(), TaskExecutionService.class);        
+        TasksJSON tasks = AppService.inst(req.getSession(), TasksJSON.class);
         
-        tes.pollTasks();
-        
-        as.sendTasksJSON(req, resp);
+        as.sendJSON(resp, tasks.getJSON());
     }
     
     
