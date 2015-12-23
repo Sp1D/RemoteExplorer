@@ -10,18 +10,33 @@ and open the template in the editor.
 
 body { 
     padding-bottom: 70px; 
+    
+}
+
+#tasksBadge.inwork {    
+    background-color: #339900;
+}
+
+.refolder {
+    color : #ff9900;
+}
+
+.refile {
+    color: #cccccc;
 }
 
 
 .leftpane {
     display: inline-block;
     width: 50%;    
-    float:left;    
+    float:left;  
+    overflow-y: scroll;
 }
 .rightpane {
     display: inline-block;    
     width: 50%;
     border-left: 2px solid gray;
+    overflow-y: scroll;
 }
 
 .footer {

@@ -5,8 +5,6 @@ var rightPath;
 var leftPath;
 
 var tasks = 0;
-var interval;
-var keeperRunning = false;
 
 
 
@@ -21,29 +19,13 @@ function check() {
     });
     if (tasks > 0) {
         setTimeout(check, 500);
+        $('#tasksBadge').addClass('inwork');
+    } else {
+        $('#tasksBadge').removeClass('inwork');
     }
-//    if (tasks === 0) {
-//        keeper(0);
-//    }
 }
 
-//function keeper(count) {
-//    tasks = count;
-//    if (count === 0) {
-//        clearInterval(interval);
-//        keeperRunning = false;
-//    } else if (!keeperRunning) {
-//        check;
-//        interval = setInterval(check, 500);
-//        keeperRunning = true;
-//        
-//    }
-//}
 
-function select(param) {
-    selectedItem = param;
-    selectedPath = $(param).children('td.path').contents();
-}
 
 
 function parseContent(data, status, xhr) {
@@ -93,11 +75,11 @@ function parseContent(data, status, xhr) {
             }
 //      It is directory. Will show with <a> link
             if (file.size.toString() === '&lt;DIR&gt;') {
-                fileString = '<a href="#" onclick="changedir(\'' + escape(pathString) + '\',\'' + pane + '\')">' + file.name + '</a>';
+                fileString = '<span class="glyphicon glyphicon-folder-close refolder" aria-hidden="true" "/>&nbsp;<a href="#" onclick="changedir(\'' + escape(pathString) + '\',\'' + pane + '\')">' + file.name + '</a>';
             }
 //        Or regular FILE
             else
-                fileString = file.name;
+                fileString = '<span class="glyphicon glyphicon-file refile" aria-hidden="true"/>&nbsp;'+file.name;
 
 //                Write new content                
             var html = '<tr class="item" onclick="clickchoose(this,&apos;' + pane + '&apos;)"><td class="path">' + fileString + '</td>' +
@@ -130,6 +112,11 @@ function changedir(path, pan) {
 
 }
 
+function select(param) {
+    selectedItem = param;
+    selectedPath = $(param).children('td.path').contents();
+}
+
 function clickchoose(elem, pan) {
     pane = pan;
     $(selectedItem).toggleClass('selected');
@@ -143,7 +130,6 @@ function createDir(path) {
         to: path
     };
     $.post(contextPath + '/create', req, function (data) {
-//            keeper(data.count);
         tasks++;
         check(data);
     });
@@ -156,6 +142,12 @@ function escape(s) {
     return str;
 }
 
+function winResize() {
+    var winheight = $(window).height();
+    $('.leftpane').css('height', winheight - 75);
+    $('.rightpane').css('height', winheight - 75);
+}
+
 $(function () {
     getContent('right');
     getContent('left');
@@ -163,11 +155,11 @@ $(function () {
     $('#tasksBadge').text(tasks);
 
     check();
-//    if (tasks > 0) {
-//        keeper(tasks);
-//    }
+    winResize();
 
     $('#createdirbutton').attr('onclick', 'createDir($(\'#dirname\').val())');
+
+    $(window).resize(winResize);
 
     $('#btncopy').click(function () {
         var paneTo;
@@ -176,11 +168,11 @@ $(function () {
         } else
             paneTo = 'left';
         var req = {
-            from: selectedPath.text(),
+            from: selectedPath.text().toString().trim(),
             to: paneTo
         };
         $.post(contextPath + '/copy', req, function (data) {
-//            keeper(data.count);
+
             tasks++;
             check(data);
         });
@@ -194,7 +186,7 @@ $(function () {
         } else
             paneTo = 'left';
         var req = {
-            from: selectedPath.text(),
+            from: selectedPath.text().toString().trim(),
             to: paneTo
         };
         $.post(contextPath + '/move', req, function (data) {
@@ -208,17 +200,15 @@ $(function () {
     $('#btndelete').click(function () {
         var req = {
             from: pane,
-            to: selectedPath.text()
+            to: selectedPath.text().toString().trim()
         };
         $.post(contextPath + '/delete', req, function (data) {
-//            keeper(data.count);
+
             tasks++;
             check(data);
         });
-//                   
+                   
     });
-
-
 
     $('#btncreate').click(function () {
         var currentPath;

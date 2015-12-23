@@ -69,8 +69,8 @@
 
         <!-- Small modal -->
 
-        <div class="modal" id="newdirmodal" tabindex="-1" role="dialog" aria-labelledby="mySmallModalLabel">
-            <div class="modal-dialog modal-sm">
+        <div class="modal" id="newdirmodal" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
                         Create directory
@@ -96,8 +96,7 @@
                 <button id="btncreate" type="button" class="btn btn-default navbar-btn">Create</button>
                 <button id="btndelete" type="button" class="btn btn-default navbar-btn">Delete</button>
                 <!--<p class="navbar-text" id="test"></p>-->
-                <p class="navbar-text navbar-right"><span id="tasksBadge" class="badge">666</span>&nbsp;Current tasks&nbsp;</p>
-
+                <p class="navbar-text navbar-right"><span id="tasksBadge" class="badge">666</span>&nbsp;Current tasks&nbsp;&nbsp;&nbsp;</p>                
             </div>
         </nav>
 
