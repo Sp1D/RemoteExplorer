@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package com.sp1d.remoteexplorer.json;
 
 import com.google.gson.Gson;
@@ -17,7 +13,12 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import javax.servlet.http.HttpSession;
 
 /**
- *
+ * Обслуживает задачи Task, а также содержит списки задач выполняемых 
+ * (Когда TaskType задачи еще не задан), выполненных,
+ * ошибочных (где ErrorType отличается от NOERROR)
+ * 
+ * Также служит для формирования объекта JSON
+ * 
  * @author sp1d
  */
 public class Tasks {
@@ -28,7 +29,6 @@ public class Tasks {
     Set<Task> errors;
 
     private final transient TaskExecutionService tes;
-    private final transient HttpSession session;
     private final transient Gson gson;
 
     public enum TaskType {
@@ -40,7 +40,6 @@ public class Tasks {
         this.tasks = new CopyOnWriteArrayList<Task>();
         this.finished = new ArrayBlockingQueue<>(5);        
         this.errors = new CopyOnWriteArraySet<Task>();
-        this.session = session;
         gson = new Gson();
         tes = AppService.inst(session, TaskExecutionService.class);        
     }

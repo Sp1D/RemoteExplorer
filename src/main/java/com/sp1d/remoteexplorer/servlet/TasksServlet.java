@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package com.sp1d.remoteexplorer.servlet;
 
 import com.sp1d.remoteexplorer.AppService;
@@ -15,7 +11,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- *
+ * Сервлет возвращает список задач в виде объекта JSON, сформированного из экземпляра
+ * Tasks
+ * 
  * @author sp1d
  */
 public class TasksServlet extends HttpServlet {

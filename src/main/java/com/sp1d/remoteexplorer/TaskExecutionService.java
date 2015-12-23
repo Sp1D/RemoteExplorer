@@ -1,12 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.sp1d.remoteexplorer;
 
 import com.sp1d.remoteexplorer.json.Task;
-import com.sp1d.remoteexplorer.json.Tasks;
 import com.sp1d.remoteexplorer.json.Tasks.TaskType;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileAlreadyExistsException;
@@ -21,34 +15,31 @@ import java.util.concurrent.Future;
 import javax.servlet.http.HttpSession;
 
 /**
- *
+ *  Занимается непосредственно запуском задач по копированию, перемещению, удалению
+ * файлов и созданию новых директорий
  * @author sp1d
  */
 public class TaskExecutionService {
-
     private final ExecutorCompletionService ecs;
-    private final HttpSession session;
-    private final Tasks t;
-    private final static String RESTRICTED_CHARS_POSIX = "(\\n|\\r|\\\\|\\/)";
-    private final AppService as;
     
 
     public enum ErrorType {
-
         NOERROR, FILEEXISTS, DIRNOTEMPTY, DIREXISTS
     }
 
     public TaskExecutionService(HttpSession session) {
-        this.session = session;
-        t = AppService.inst(session, Tasks.class);
-        ecs = new ExecutorCompletionService(Executors.newSingleThreadExecutor());
-        as = AppService.inst(session, AppService.class);
+        ecs = new ExecutorCompletionService(Executors.newSingleThreadExecutor());        
     }
 
     public void addTask(Task task) {
         ecs.submit(newCallable(task));
     }
-
+/*
+ * Собирает и возвращает у ExecutorCompletionService список завершенных заданий
+ * Вызывается соответствующим методом PollTasks в классе Tasks
+ * 
+ * 
+ */
     public List<Task> pollTasks() {
         List<Task> tasks = new ArrayList<>();
         try {
@@ -63,6 +54,10 @@ public class TaskExecutionService {
         }
         return tasks;
     }
+    
+    /*
+     * Фабрика объектов Callable
+     */
 
     private Callable<Task> newCallable(Task task) {
         if (task.getType() == TaskType.COPY) {

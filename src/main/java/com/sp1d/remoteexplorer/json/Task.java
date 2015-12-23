@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package com.sp1d.remoteexplorer.json;
 
 
@@ -14,7 +10,12 @@ import java.util.Objects;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- *
+ *  Класс формирует объект задачи (копирования, удаления и т.д.), который передается
+ * по цепочке исполнителей и после возращается с установленным значением поля
+ * error (которое ссылается на null после формирования конструктором)
+ * 
+ * Также используется для формирования объекта JSON
+ * 
  * @author sp1d
  */
 public class Task {
@@ -50,7 +51,9 @@ public class Task {
         this.f = from != null ? from.toString() : "";
         this.t = to != null ? to.toString() : "";
     }
-
+/*
+ * Формирует Task типа COPY
+ */
     private void initCopyTask(TaskType type, HttpServletRequest req, Path lePanePath, Path riPanePath) {
         Path copyFrom = null, copyTo = null;
 
@@ -70,7 +73,9 @@ public class Task {
         this.from = copyFrom;
         this.to = copyTo;
     }
-    
+  /*
+ * Формирует Task типа MOVE
+ */  
     private void initMoveTask(TaskType type, HttpServletRequest req, Path lePanePath, Path riPanePath) {
         Path moveFrom = null, moveTo = null;
 
@@ -90,7 +95,9 @@ public class Task {
         this.from = moveFrom;
         this.to = moveTo;
     }
-
+/*
+ * Формирует Task типа CREATE
+ */
     private void initCreateTask(TaskType type, HttpServletRequest req, Path lePanePath, Path riPanePath) {
         Path createPath = null;
 
@@ -108,7 +115,9 @@ public class Task {
 
         this.to = createPath;
     }
-
+/*
+ * Формирует Task типа DELETE
+ */
     private void initDeleteTask(TaskType type, HttpServletRequest req, Path lePanePath, Path riPanePath) {
         Path deleteFrom = null;
         

@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package com.sp1d.remoteexplorer.json;
 
 import com.sp1d.remoteexplorer.AppService;
@@ -17,23 +13,20 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 /**
- *
+ *  Класс предназначен для формирования JSON сообщения, формируемого из экземпляра.
+ * Содержит листинг файлов некоей директории
+ * 
  * @author sp1d
  */
 public class DirectoryListing {
 
     private final List<File> list;
-//    private final String rootPath;
-    private final String leftPath;
-    private final String rightPath;
+    
     private String pane;
-
-    private final transient HttpSession sess;
-    private final transient AppService as;
+    
 
     enum Info {
 
@@ -41,17 +34,14 @@ public class DirectoryListing {
     }
 
     public DirectoryListing(HttpSession sess, Pane pane) {
-        this.sess = sess;
-        as = AppService.inst(sess, AppService.class);
         list = new ArrayList<>();
-        leftPath = as.leftPath.toString();
-        rightPath = as.rightPath.toString();
-//        rootPath = as.rootPath.toString();
         this.pane = pane.toString().toLowerCase();
     }
 
-//  Path formatting
-//  HttpServletRequest and Pane only needed for url resolution
+/*
+ * Название от Path Formatting. Формирует строку из указанного пути Path согласно
+ * указанному стилю info
+ */
     String pf(Path path, Info info) {
 
         try {
@@ -59,7 +49,6 @@ public class DirectoryListing {
 
             switch (info) {
                 case FILENAME:
-//                        return path.getName(path.getNameCount() - 1).normalize().toString();
                     return path.getFileName().toString();
                 case PARENT:
                     return path.normalize().toString();
@@ -77,17 +66,9 @@ public class DirectoryListing {
             return "";
         }
     }
-
-//    String pLink(Path path, String text) {
-//        if (!path.toFile().isDirectory()) {
-//            return path.normalize().toString();
-//        }
-//
-//        StringBuilder sb = new StringBuilder();
-//        sb.append("<a");
-//
-//        return sb.toString();
-//    }
+/*
+ * Добавляет Path к листингу
+ */
     public void add(Path path) {
         list.add(new File()
                 .addName(pf(path, Info.FILENAME))
@@ -95,7 +76,12 @@ public class DirectoryListing {
                 .addSize(pf(path, Info.SIZE))
                 .addPerm(pf(path, Info.ATTRIBUTES)));
     }
-
+/*
+ * Добавляет Path к листингу, подразумевая, что это ссылка на корневую директорию
+ * для текущего пути. В отличие от add c использованием Info.FILENAME, 
+ * addParent с Info.PARENT сформирует полный путь к файлу, а не только название 
+ * самого файла
+ */
     public void addParent(Path path) {
         list.add(new File()
                 .addName(pf(path, Info.PARENT))

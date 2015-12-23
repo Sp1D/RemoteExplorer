@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package com.sp1d.remoteexplorer.servlet;
 
 import com.google.gson.Gson;
@@ -18,7 +14,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- *
+ * Возвращает содержимое панели, указанной в качестве параметра запроса (right или
+ * left) в виде сообщения JSON
+ * 
  * @author sp1d
  */
 public class ContentServlet extends HttpServlet {
@@ -28,13 +26,12 @@ public class ContentServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-
         AppService as = AppService.inst(req.getSession(), AppService.class);
 
         DirectoryListing listing = null;
         if (req.getParameter("right") != null) {
             listing = new DirectoryListing(req.getSession(), Pane.RIGHT);
-            if (!as.rightPath.equals(as.rootPath)) {
+            if (!as.rightPath.equals(as.ROOT_PATH)) {
                 listing.addParent(as.rightPath.getParent());
             }
             for (Path path : Files.newDirectoryStream(as.rightPath)) {
@@ -42,7 +39,7 @@ public class ContentServlet extends HttpServlet {
             }
         } else if (req.getParameter("left") != null) {
             listing = new DirectoryListing(req.getSession(), Pane.LEFT);
-            if (!as.leftPath.equals(as.rootPath)) {
+            if (!as.leftPath.equals(as.ROOT_PATH)) {
                 listing.addParent(as.leftPath.getParent());
             }
             for (Path path : Files.newDirectoryStream(as.leftPath)) {
@@ -52,10 +49,6 @@ public class ContentServlet extends HttpServlet {
 
         if (listing != null) {            
             as.sendJSON(resp, gson.toJson(listing));
-//            
-//            resp.setContentType("application/json");
-//            resp.setCharacterEncoding("UTF-8");
-//            resp.getWriter().write(gson.toJson(listing));
         }
     }
 

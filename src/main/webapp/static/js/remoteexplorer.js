@@ -43,7 +43,6 @@ function check() {
 function select(param) {
     selectedItem = param;
     selectedPath = $(param).children('td.path').contents();
-//    $('#test').text(pane + ':' + selectedPath.text());
 }
 
 
