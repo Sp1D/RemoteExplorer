@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="3.1" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
+    
+    <servlet>
+        <servlet-name>default</servlet-name>
+        <servlet-class>org.apache.catalina.servlets.DefaultServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>default</servlet-name>
         <url-pattern>*.js</url-pattern>
@@ -10,14 +15,8 @@
         <url-pattern>*.woff</url-pattern>        
         <url-pattern>*.woff2</url-pattern>        
     </servlet-mapping>
-    <!--    <servlet>
-        <servlet-name>ExplorerJSP</servlet-name>
-        <jsp-file>/index_1.jsp</jsp-file>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>ExplorerJSP</servlet-name>
-        <url-pattern>/</url-pattern>
-    </servlet-mapping>-->
+    
+            
     <servlet>
         <servlet-name>ContentServlet</servlet-name>
         <servlet-class>com.sp1d.remoteexplorer.servlet.ContentServlet</servlet-class>
@@ -26,6 +25,8 @@
         <servlet-name>ContentServlet</servlet-name>
         <url-pattern>/content</url-pattern>
     </servlet-mapping>
+    
+    
     <servlet>
         <servlet-name>TasksServlet</servlet-name>
         <servlet-class>com.sp1d.remoteexplorer.servlet.TasksServlet</servlet-class>
@@ -33,49 +34,9 @@
     <servlet-mapping>
         <servlet-name>TasksServlet</servlet-name>
         <url-pattern>/tasks</url-pattern>
-    </servlet-mapping>
-    <!--    <servlet>
-        <servlet-name>CreateServlet</servlet-name>
-        <servlet-class>com.sp1d.remoteexplorer.CreateServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>CreateServlet</servlet-name>
-        <url-pattern>/create</url-pattern>
-    </servlet-mapping>
+    </servlet-mapping>  
+    
         
-        
-    
-    <servlet>
-        <servlet-name>DeleteServlet</servlet-name>
-        <servlet-class>com.sp1d.remoteexplorer.DeleteServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>DeleteServlet</servlet-name>
-        <url-pattern>/delete</url-pattern>
-    </servlet-mapping>
-    
-    
-    <servlet>
-        <servlet-name>CopyServlet</servlet-name>
-        <servlet-class>com.sp1d.remoteexplorer.CopyServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>CopyServlet</servlet-name>
-        <url-pattern>/copy</url-pattern>
-    </servlet-mapping>
-    
-    
-    
-    <servlet>
-        <servlet-name>MoveServlet</servlet-name>
-        <servlet-class>com.sp1d.remoteexplorer.MoveServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>MoveServlet</servlet-name>
-        <url-pattern>/move</url-pattern>
-    </servlet-mapping>
-    
-    -->
     <servlet>
         <servlet-name>IndexServlet</servlet-name>
         <servlet-class>com.sp1d.remoteexplorer.servlet.IndexServlet</servlet-class>
@@ -84,9 +45,11 @@
         <servlet-name>IndexServlet</servlet-name>
         <url-pattern>/</url-pattern>
     </servlet-mapping>
+    
+    
     <session-config>
         <session-timeout>
-            30
+            60
         </session-timeout>
     </session-config>
 </web-app>
