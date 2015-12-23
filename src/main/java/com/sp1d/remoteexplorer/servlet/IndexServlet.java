@@ -49,8 +49,7 @@ public class IndexServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
                 
         int s = req.getRequestURI().lastIndexOf("/");
-        String command = req.getRequestURI().substring(s+1);
-        System.out.println(command);
+        String command = req.getRequestURI().substring(s+1);        
         
         AppService as = AppService.inst(req.getSession(), AppService.class);
         TaskExecutionService tes = AppService.inst(req.getSession(), TaskExecutionService.class);        

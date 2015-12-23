@@ -9,7 +9,6 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
-import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -22,8 +21,8 @@ import javax.servlet.http.HttpSession;
 public class AppService {
 
     public Path leftPath, rightPath;
-    public List<Path> leftListing, rightListing;
-    public static final Path ROOT_PATH = Paths.get("/tmp");
+//    public static final Path ROOT_PATH = Paths.get("/tmp");
+    public static final Path ROOT_PATH = Paths.get(System.getProperty("java.io.tmpdir"));
     final PathMatcher pm = FileSystems.getDefault().getPathMatcher("glob:" + ROOT_PATH.toFile().getAbsolutePath() + "/**");
     static Gson gson = new Gson();
 

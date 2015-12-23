@@ -8,6 +8,8 @@ import com.sp1d.remoteexplorer.json.DirectoryListing;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.LinkedList;
+import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -29,27 +31,26 @@ public class ContentServlet extends HttpServlet {
         AppService as = AppService.inst(req.getSession(), AppService.class);
 
         DirectoryListing listing = null;
+        List<Path> set = new LinkedList<Path>();
+        
         if (req.getParameter("right") != null) {
-            listing = new DirectoryListing(req.getSession(), Pane.RIGHT);
-            if (!as.rightPath.equals(as.ROOT_PATH)) {
-                listing.addParent(as.rightPath.getParent());
-            }
             for (Path path : Files.newDirectoryStream(as.rightPath)) {
-                listing.add(path);
+                set.add(path);
             }
+            listing = new DirectoryListing(req.getSession(), Pane.RIGHT, set);
         } else if (req.getParameter("left") != null) {
-            listing = new DirectoryListing(req.getSession(), Pane.LEFT);
-            if (!as.leftPath.equals(as.ROOT_PATH)) {
-                listing.addParent(as.leftPath.getParent());
-            }
             for (Path path : Files.newDirectoryStream(as.leftPath)) {
-                listing.add(path);
+                set.add(path);
             }
-        }
+            listing = new DirectoryListing(req.getSession(), Pane.LEFT, set);
+        }        
 
-        if (listing != null) {            
+        if (listing != null) { 
+                        
             as.sendJSON(resp, gson.toJson(listing));
         }
     }
+    
+    
 
 }

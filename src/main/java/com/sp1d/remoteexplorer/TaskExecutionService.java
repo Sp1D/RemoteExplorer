@@ -2,6 +2,7 @@ package com.sp1d.remoteexplorer;
 
 import com.sp1d.remoteexplorer.json.Task;
 import com.sp1d.remoteexplorer.json.Tasks.TaskType;
+import java.io.IOException;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
@@ -24,7 +25,7 @@ public class TaskExecutionService {
     
 
     public enum ErrorType {
-        NOERROR, FILEEXISTS, DIRNOTEMPTY, DIREXISTS
+        NOERROR, FILEEXISTS, DIRNOTEMPTY, IOERROR
     }
 
     public TaskExecutionService(HttpSession session) {
@@ -72,6 +73,19 @@ public class TaskExecutionService {
             return null;
         }
     }
+    
+    private Task setError(Task task, IOException exception) {
+        if (exception instanceof FileAlreadyExistsException) {            
+            task.setError(ErrorType.FILEEXISTS);
+            return task;
+        } else if (exception instanceof DirectoryNotEmptyException) {
+            task.setError(ErrorType.DIRNOTEMPTY);
+            return task;
+        } else {
+            task.setError(ErrorType.IOERROR);
+            return task;
+        }
+    }
 
     class copyCallable implements Callable<Task> {
 
@@ -86,8 +100,8 @@ public class TaskExecutionService {
             try {
                 Files.copy(task.getFrom(), task.getTo());
                 task.setError(ErrorType.NOERROR);
-            } catch (FileAlreadyExistsException e) {
-                task.setError(ErrorType.FILEEXISTS);
+            } catch (IOException e) {
+                task = setError(task, e);
             } finally {
                 return task;
             }
@@ -107,9 +121,10 @@ public class TaskExecutionService {
             try {
                 Files.move(task.getFrom(), task.getTo());
                 task.setError(ErrorType.NOERROR);
-            } catch (FileAlreadyExistsException e) {
-                task.setError(ErrorType.FILEEXISTS);
-            } finally {
+            } catch (IOException e) {
+                task = setError(task, e);
+            }
+            finally {
                 return task;
             }
         }
@@ -128,8 +143,8 @@ public class TaskExecutionService {
             try {
                 Files.createDirectory(task.getTo());
                 task.setError(ErrorType.NOERROR);
-            } catch (FileAlreadyExistsException e) {
-                task.setError(ErrorType.DIREXISTS);
+            } catch (IOException e) {
+                task = setError(task, e);
             } finally {
                 return task;
             }
@@ -149,12 +164,14 @@ public class TaskExecutionService {
             try {
                 Files.delete(task.getTo());
                 task.setError(ErrorType.NOERROR);
-            } catch (DirectoryNotEmptyException e) {
-                task.setError(ErrorType.FILEEXISTS);
+            } catch (IOException e) {
+                task = setError(task, e);
             } finally {
                 return task;
             }
         }
     }
+    
+    
 
 }
