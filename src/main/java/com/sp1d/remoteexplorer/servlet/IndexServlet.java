@@ -55,7 +55,8 @@ public class IndexServlet extends HttpServlet {
         TaskExecutionService tes = AppService.inst(req.getSession(), TaskExecutionService.class);        
         Tasks tasks = AppService.inst(req.getSession(), Tasks.class);
                 
-        tasks.addTask(new Task(TaskType.valueOf(command.toUpperCase()), req, as.leftPath, as.rightPath));
+        tasks.addTask(new Task(TaskType.valueOf(command.toUpperCase()), req, 
+                as.panePaths.get(Pane.LEFT), as.panePaths.get(Pane.RIGHT)));
         
         as.sendJSON(resp, tasks.getJSON());              
 

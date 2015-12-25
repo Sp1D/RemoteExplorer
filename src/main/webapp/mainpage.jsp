@@ -19,7 +19,7 @@
     <head>
         <script>
             var contextPath = '<%= contextPath%>';
-            var rootPath = '<%= AppService.ROOT_PATH.toString() %>';
+            var rootPath = '<%= AppService.ROOT_PATH_STRING %>';
         </script>           
         <script src="<%= contextPath%>/static/js/jquery-2.1.4.min.js"></script>
         <script src="<%= contextPath%>/static/js/bootstrap.min.js"></script>

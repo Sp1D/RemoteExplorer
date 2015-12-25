@@ -44,39 +44,23 @@ function parseContent(data, status, xhr) {
 
     $.each(data.list, function (k, file) {
         var fileString;
-
-//      It is link to parent dir ("..") His full path came from server
-//      so we need to correct it and create one line <tr> section without any supplementary options
-        if (file.size.toString() === '&lt;PARENT&gt;') {
-            var pathString;
-            pathString = file.name;
-            pathString = pathString.replace(rootPath + '/', '');
-
-
-            fileString = '<a href="#" onclick="changedir(&apos;' + pathString + '&apos;,&apos;' + pane + '&apos;)">..</a>';
-
+        var separator = data.separator;
+        
+//      It is link to parent dir ("..") 
+        if (file.size.toString() === '&lt;PARENT&gt;') {                        
+            fileString = '<a href="#" onclick="changedir(&apos;..&apos;,&apos;' + pane + '&apos;)">..</a>';
 //                Write new content
             var html = '<tr class="item" onclick="clickchoose(this,&apos;' + pane + '&apos;)"><td class="path" colspan="4">' + fileString + '</td>' +
                     '</tr>';
             $('#' + pane + 'body').append(html);
 
-
         } else {
 
-//      It is regular file or directory link. Server gives us only filename (for perfomance issue)
-//      so we need to correct it to create relative link such "tmp/1/2" without secured root dir
-            var pathString;
-            if (pane === 'left') {
-                pathString = leftPath + '/' + file.name;
-                pathString = pathString.replace(rootPath + '/', '');
-            } else if (pane === 'right') {
-                pathString = rightPath + '/' + file.name;
-                pathString = pathString.replace(rootPath + '/', '');
-            }
 //      It is directory. Will show with <a> link
             if (file.size.toString() === '&lt;DIR&gt;') {
-                fileString = '<span class="glyphicon glyphicon-folder-close refolder" aria-hidden="true" "/>&nbsp;<a href="#" onclick="changedir(\'' + escape(pathString) + '\',\'' + pane + '\')">' + file.name + '</a>';
+                fileString = '<span class="glyphicon glyphicon-folder-close refolder" aria-hidden="true" "/>&nbsp;<a href="#" onclick="changedir(\'' + escape(file.name) + '\',\'' + pane + '\')">' + file.name + '</a>';
             }
+            
 //        Or regular FILE
             else
                 fileString = '<span class="glyphicon glyphicon-file refile" aria-hidden="true"/>&nbsp;'+file.name;

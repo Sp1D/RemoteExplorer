@@ -2,6 +2,8 @@
 package com.sp1d.remoteexplorer.json;
 
 
+import com.sp1d.remoteexplorer.AppService;
+import com.sp1d.remoteexplorer.AppService.Pane;
 import com.sp1d.remoteexplorer.TaskExecutionService.ErrorType;
 import com.sp1d.remoteexplorer.json.Tasks.TaskType;
 
@@ -57,10 +59,10 @@ public class Task {
     private void initCopyTask(TaskType type, HttpServletRequest req, Path lePanePath, Path riPanePath) {
         Path copyFrom = null, copyTo = null;
 
-        if (req.getParameter("to").equalsIgnoreCase("right")) {
+        if (req.getParameter("to").equalsIgnoreCase(Pane.RIGHT.toString())) {
             copyTo = riPanePath;
             copyFrom = lePanePath.resolve(req.getParameter("from"));
-        } else if (req.getParameter("to").equalsIgnoreCase("left")) {
+        } else if (req.getParameter("to").equalsIgnoreCase(Pane.LEFT.toString())) {
             copyTo = lePanePath;
             copyFrom = riPanePath.resolve(req.getParameter("from"));
         }

@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.DosFileAttributes;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -13,11 +14,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import javax.servlet.http.HttpSession;
 
 /**
@@ -30,8 +27,9 @@ public class DirectoryListing {
 
     private final List<File> list;
 
-    private String leftPath, rightPath;
-    private String pane;
+    private final String leftPath, rightPath;
+    private final String pane;
+    private final String separator = AppService.SEPARATOR;
 
     private final transient AppService as;
     private transient List<Path> tempList;
@@ -46,21 +44,27 @@ public class DirectoryListing {
 
         this.pane = pane.toString().toLowerCase();
         as = AppService.inst(sess, AppService.class);
-        leftPath = as.leftPath.toString();
-        rightPath = as.rightPath.toString();
+//        leftPath = as.leftPath.toString();
+//        rightPath = as.rightPath.toString();
+        leftPath = as.panePaths.get(Pane.LEFT).toString();
+        rightPath = as.panePaths.get(Pane.RIGHT).toString();
 
-        tempList = new ArrayList<Path>(unsortedList);
+        tempList = new ArrayList<>(unsortedList);
         Collections.sort(tempList, new dirComparator());
 
-        if (pane == Pane.RIGHT) {
-            if (!as.rightPath.equals(as.ROOT_PATH)) {
-                this.addParent(as.rightPath.getParent());
-            }
-        } else if (pane == Pane.LEFT) {
-            if (!as.leftPath.equals(as.ROOT_PATH)) {
-                this.addParent(as.leftPath.getParent());
-            }
+        if (!as.rootPath.equals(as.panePaths.get(pane))) {
+            this.addParent(as.panePaths.get(pane).getParent());
         }
+        
+//        if (pane == Pane.RIGHT) {
+//            if (!as.rightPath.equals(as.rootPath)) {
+//                this.addParent(as.rightPath.getParent());
+//            }
+//        } else if (pane == Pane.LEFT) {
+//            if (!as.leftPath.equals(as.rootPath)) {
+//                this.addParent(as.leftPath.getParent());
+//            }
+//        }
         for (Path path : tempList) {
             this.add(path);
         }
@@ -84,9 +88,14 @@ public class DirectoryListing {
                     LocalDateTime ldt = LocalDateTime.ofInstant(attr.lastModifiedTime().toInstant(), ZoneId.systemDefault());
                     return ldt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
                 case SIZE:
-                    return attr.isDirectory() ? "&lt;DIR&gt;" : String.valueOf(attr.size() ) + " b";
+                    return attr.isDirectory() ? "&lt;DIR&gt;" : String.valueOf(attr.size()) + " b";
                 case ATTRIBUTES:
-                    return PosixFilePermissions.toString(Files.getPosixFilePermissions(path));
+                    if (path.getFileSystem().supportedFileAttributeViews().contains("PosixFileAttributeView"))  {
+                        return PosixFilePermissions.toString(Files.getPosixFilePermissions(path));
+                    } else if (path.getFileSystem().supportedFileAttributeViews().contains("DosFileAttributeView")) {                        
+                        DosFileAttributes dfa = Files.readAttributes(path, DosFileAttributes.class);
+                        return dfa.isHidden() ? "hidden" : "";
+                    }
                 default:
                     return "";
             }
@@ -94,6 +103,7 @@ public class DirectoryListing {
             return "";
         }
     }
+
     /*
      * Добавляет Path к листингу
      */
@@ -107,6 +117,7 @@ public class DirectoryListing {
                 .addPerm(pf(path, Info.ATTRIBUTES)));
 
     }
+
     /*
      * Добавляет Path к листингу, подразумевая, что это ссылка на корневую
      * директорию для текущего пути. В отличие от add c использованием

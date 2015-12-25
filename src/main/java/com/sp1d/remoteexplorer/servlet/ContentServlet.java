@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import com.sp1d.remoteexplorer.AppService;
 import com.sp1d.remoteexplorer.AppService.Pane;
 import com.sp1d.remoteexplorer.json.DirectoryListing;
+import com.sp1d.remoteexplorer.json.Tasks;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,13 +34,13 @@ public class ContentServlet extends HttpServlet {
         DirectoryListing listing = null;
         List<Path> set = new LinkedList<Path>();
         
-        if (req.getParameter("right") != null) {
-            for (Path path : Files.newDirectoryStream(as.rightPath)) {
+        if (req.getParameter(Pane.RIGHT.toString().toLowerCase()) != null) {
+            for (Path path : Files.newDirectoryStream(as.panePaths.get(Pane.RIGHT))) {
                 set.add(path);
             }
             listing = new DirectoryListing(req.getSession(), Pane.RIGHT, set);
-        } else if (req.getParameter("left") != null) {
-            for (Path path : Files.newDirectoryStream(as.leftPath)) {
+        } else if (req.getParameter(Pane.LEFT.toString().toLowerCase()) != null) {
+            for (Path path : Files.newDirectoryStream(as.panePaths.get(Pane.LEFT))) {
                 set.add(path);
             }
             listing = new DirectoryListing(req.getSession(), Pane.LEFT, set);
