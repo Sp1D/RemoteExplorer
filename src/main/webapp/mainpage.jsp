@@ -18,21 +18,18 @@
 <html>
     <head>
         <script>
-            var contextPath = '<%= contextPath%>';
-            var rootPath = '<%= AppService.ROOT_PATH_STRING %>';
+            var contextPath = '<%= contextPath%>';            
         </script>           
-        <script src="<%= contextPath%>/static/js/jquery-2.1.4.min.js"></script>
-        <script src="<%= contextPath%>/static/js/bootstrap.min.js"></script>
+        <script src="<%= contextPath%>/static/js/jquery-2.1.4.min.js"></script>        
         <script src="<%= contextPath%>/static/js/remoteexplorer.js"></script>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">       
-        <link href="<%= contextPath%>/static/css/bootstrap.min.css" rel="stylesheet">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <link href="<%= contextPath%>/static/css/local.css" rel="stylesheet">                     
         <title>Remote Explorer</title>
     </head>
     <body>
         <div class="container-fluid">
             <div class="leftpane">
-                <table class="table table-condensed">
+                <table class="panetable">
                     <thead>
                         <tr><th colspan="4" id="leftpath">/fakepath</th></tr>
                         <tr>
@@ -43,7 +40,12 @@
                         </tr>
                     </thead>
                     <tbody id="leftbody">
-
+                        <tr>
+                            <td>Filename</td>
+                            <td>Size</td>
+                            <td>Datetime</td>
+                            <td>Permissions</td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
