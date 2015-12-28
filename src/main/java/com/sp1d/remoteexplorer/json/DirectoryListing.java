@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.DosFileAttributes;
+import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -16,6 +17,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import javax.servlet.http.HttpSession;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Класс предназначен для формирования JSON сообщения, формируемого из
@@ -33,6 +36,8 @@ public class DirectoryListing {
 
     private final transient AppService as;
     private transient List<Path> tempList;
+    private transient Logger log = LogManager.getLogger(DirectoryListing.class);
+    private transient StringBuilder sb = new StringBuilder();
 
     enum Info {
 
@@ -44,8 +49,6 @@ public class DirectoryListing {
 
         this.pane = pane.toString().toLowerCase();
         as = AppService.inst(sess, AppService.class);
-//        leftPath = as.leftPath.toString();
-//        rightPath = as.rightPath.toString();
         leftPath = as.panePaths.get(Pane.LEFT).toString();
         rightPath = as.panePaths.get(Pane.RIGHT).toString();
 
@@ -55,46 +58,63 @@ public class DirectoryListing {
         if (!as.rootPath.equals(as.panePaths.get(pane))) {
             this.addParent(as.panePaths.get(pane).getParent());
         }
-        
-//        if (pane == Pane.RIGHT) {
-//            if (!as.rightPath.equals(as.rootPath)) {
-//                this.addParent(as.rightPath.getParent());
-//            }
-//        } else if (pane == Pane.LEFT) {
-//            if (!as.leftPath.equals(as.rootPath)) {
-//                this.addParent(as.leftPath.getParent());
-//            }
-//        }
+
         for (Path path : tempList) {
             this.add(path);
         }
     }
 
     /*
-     * Название от Path Formatting. Формирует строку из указанного пути Path
-     * согласно указанному стилю info
+      Название от Path Formatting. Формирует строку из указанного пути Path
+      согласно указанному стилю info
      */
     String pf(Path path, Info info) {
-
+       
+        
         try {
-            BasicFileAttributes attr = Files.readAttributes(path, BasicFileAttributes.class);
+            BasicFileAttributes attr = null;
+            DosFileAttributes attrDos = null;
+            boolean posix = false;
+
+            if (path.getFileSystem().supportedFileAttributeViews().contains("posix")) {
+                posix = true;
+                attr = Files.readAttributes(path, BasicFileAttributes.class);
+            } else if (path.getFileSystem().supportedFileAttributeViews().contains("dos")) {
+                posix = false;
+                attrDos = Files.readAttributes(path, DosFileAttributes.class);
+                attr = attrDos;
+            } else {
+                log.fatal("Filesystem is not supported");
+                throw new IOException("Filesystem is not supported".intern());
+            }
 
             switch (info) {
                 case FILENAME:
                     return path.getFileName().toString();
                 case PARENT:
-                    return path.normalize().toString();
+                    return "..";
                 case DATE:
                     LocalDateTime ldt = LocalDateTime.ofInstant(attr.lastModifiedTime().toInstant(), ZoneId.systemDefault());
                     return ldt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
                 case SIZE:
                     return attr.isDirectory() ? "&lt;DIR&gt;" : String.valueOf(attr.size()) + " b";
                 case ATTRIBUTES:
-                    if (path.getFileSystem().supportedFileAttributeViews().contains("PosixFileAttributeView"))  {
+                    if (posix) {
                         return PosixFilePermissions.toString(Files.getPosixFilePermissions(path));
-                    } else if (path.getFileSystem().supportedFileAttributeViews().contains("DosFileAttributeView")) {                        
-                        DosFileAttributes dfa = Files.readAttributes(path, DosFileAttributes.class);
-                        return dfa.isHidden() ? "hidden" : "";
+                    } else {                        
+                        if (attrDos != null) {
+                            sb.append(attrDos.isHidden() ? "H/" : "")
+                                    .append(attrDos.isReadOnly() ? "R/" : "")
+                                    .append(attrDos.isArchive() ? "A/" : "")
+                                    .append(attrDos.isSystem() ? "S/" : "");
+                            String attrString = "";
+                            if (sb.length() > 0) {
+                                sb = sb.deleteCharAt(sb.length()-1);
+                                attrString = sb.toString();
+                                sb = sb.delete(0, sb.length());                                
+                            }
+                            return attrString;                            
+                        } else return "";
                     }
                 default:
                     return "";
@@ -105,9 +125,8 @@ public class DirectoryListing {
     }
 
     /*
-     * Добавляет Path к листингу
+      Добавляет Path к листингу
      */
-
     public void add(Path path) {
 
         list.add(new File()
@@ -119,12 +138,9 @@ public class DirectoryListing {
     }
 
     /*
-     * Добавляет Path к листингу, подразумевая, что это ссылка на корневую
-     * директорию для текущего пути. В отличие от add c использованием
-     * Info.FILENAME, addParent с Info.PARENT сформирует полный путь к файлу, а
-     * не только название самого файла
+      Добавляет Path к листингу, форматируя в виде перехода в вышестоящую 
+    директорию
      */
-
     public void addParent(Path path) {
         list.add(new File()
                 .addName(pf(path, Info.PARENT))

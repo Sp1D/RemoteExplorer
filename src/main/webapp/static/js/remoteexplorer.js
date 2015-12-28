@@ -15,13 +15,13 @@ function check() {
             getContent('right');
         }
         tasks = data.count;
-        $('#tasksBadge').text(tasks);
+        $('#badgeTasks').text(tasks);
     });
     if (tasks > 0) {
         setTimeout(check, 500);
-        $('#tasksBadge').addClass('inwork');
+        $('#badgeTasks').addClass('inwork');
     } else {
-        $('#tasksBadge').removeClass('inwork');
+        $('#badgeTasks').removeClass('inwork');
     }
 }
 
@@ -45,9 +45,9 @@ function parseContent(data, status, xhr) {
     $.each(data.list, function (k, file) {
         var fileString;
         var separator = data.separator;
-        
+
 //      It is link to parent dir ("..") 
-        if (file.size.toString() === '&lt;PARENT&gt;') {                        
+        if (file.size.toString() === '&lt;PARENT&gt;') {
             fileString = '<a href="#" onclick="changedir(&apos;..&apos;,&apos;' + pane + '&apos;)">..</a>';
 //                Write new content
             var html = '<tr class="item" onclick="clickchoose(this,&apos;' + pane + '&apos;)"><td class="path" colspan="4">' + fileString + '</td>' +
@@ -60,10 +60,10 @@ function parseContent(data, status, xhr) {
             if (file.size.toString() === '&lt;DIR&gt;') {
                 fileString = '<span class="glyphicon glyphicon-folder-close refolder" aria-hidden="true" "/>&nbsp;<a href="#" onclick="changedir(\'' + escape(file.name) + '\',\'' + pane + '\')">' + file.name + '</a>';
             }
-            
+
 //        Or regular FILE
             else
-                fileString = '<span class="glyphicon glyphicon-file refile" aria-hidden="true"/>&nbsp;'+file.name;
+                fileString = '<span class="glyphicon glyphicon-file refile" aria-hidden="true"/>&nbsp;' + file.name;
 
 //                Write new content                
             var html = '<tr class="item" onclick="clickchoose(this,&apos;' + pane + '&apos;)"><td class="path">' + fileString + '</td>' +
@@ -78,7 +78,18 @@ function parseContent(data, status, xhr) {
 
 
 function getContent(pane) {
-    $.getJSON(contextPath + '/content', pane, parseContent);
+    /*
+     IE кэширует GET запросы, поэтому cache : false
+     Также можно использовать POST, но переделывать структуру приложения
+     не хочется
+     */
+    $.ajax({
+        dataType: "json",
+        url: contextPath + '/content',
+        data: pane,
+        cache: false,
+        success: parseContent
+    });
 }
 
 function changedir(path, pan) {
@@ -92,7 +103,13 @@ function changedir(path, pan) {
         data = {right: path};
     }
 
-    $.getJSON('', data, parseContent);
+    $.ajax({
+        dataType: "json",
+        url: '',
+        data: data,
+        cache: false,
+        success: parseContent
+    });
 
 }
 
@@ -108,15 +125,9 @@ function clickchoose(elem, pan) {
     $(elem).toggleClass('selected');
 }
 
-function createDir(path) {
-    var req = {
-        from: pane,
-        to: path
-    };
-    $.post(contextPath + '/create', req, function (data) {
-        tasks++;
-        check(data);
-    });
+function closeDialogs() {
+    $('.dialog').hide();
+    $('#hideAll').hide();
 }
 
 function escape(s) {
@@ -133,19 +144,20 @@ function winResize() {
 }
 
 $(function () {
+    winResize();
+
     getContent('right');
     getContent('left');
 
-    $('#tasksBadge').text(tasks);
+    $('#badgeTasks').text(tasks);
 
     check();
-    winResize();
 
-    $('#createdirbutton').attr('onclick', 'createDir($(\'#dirname\').val())');
+
 
     $(window).resize(winResize);
 
-    $('#btncopy').click(function () {
+    $('#btnCopy').click(function () {
         var paneTo;
         if (pane === 'left') {
             paneTo = 'right';
@@ -156,14 +168,13 @@ $(function () {
             to: paneTo
         };
         $.post(contextPath + '/copy', req, function (data) {
-
             tasks++;
             check(data);
         });
 
     });
 
-    $('#btnmove').click(function () {
+    $('#btnMove').click(function () {
         var paneTo;
         if (pane === 'left') {
             paneTo = 'right';
@@ -181,7 +192,7 @@ $(function () {
 
     });
 
-    $('#btndelete').click(function () {
+    $('#btnDelete').click(function () {
         var req = {
             from: pane,
             to: selectedPath.text().toString().trim()
@@ -191,22 +202,40 @@ $(function () {
             tasks++;
             check(data);
         });
-                   
+
     });
 
-    $('#btncreate').click(function () {
-        var currentPath;
+    $('#btnCreate').click(function () {
         if (pane !== 'left' && pane !== 'right') {
             alert('Select pane please');
             return;
         }
-        if (pane === 'left') {
-            currentPath = leftPath + '/';
-        } else if (pane === 'right') {
-            currentPath = rightPath + '/';
-        }
-        $('#newdircurrentpath').text(currentPath);
-        $('#newdirmodal').modal('show');
+        $('#dlgCreate').show();
+        $('#hideAll').show();
+
+    });
+
+    $('#btnCreateDir').click(function () {
+        var req = {
+            from: pane,
+            to: $('#dirname').val()
+        };
+        $.post(contextPath + '/create', req, function (data) {
+            tasks++;
+            check(data);
+        });
+        $('#dirname').val('');
+        $('#dlgCreate').hide();
+        $('#hideAll').hide();
+    });
+
+    $('.btnCancel').click(function () {        
+        $('.dialog').hide();
+        $('#hideAll').hide();
+    });
+
+    $('ul.tasks li').click(function () {
+        $('#popupTasks').toggle();
     });
 });
 

@@ -9,11 +9,61 @@ and open the template in the editor.
 */
 
 body { 
-    padding-bottom: 70px; 
-    
+    margin: 0px;
+    padding: 0px;
+    padding-bottom: 50px; 
+
 }
 
-#tasksBadge.inwork {    
+
+
+ul.taskbar {
+    bottom: 0px;
+    position: fixed;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;    
+    border-top: 1px solid #cccccc;
+    background-color: #f2f2f2;
+}
+
+ul.taskbar li {
+    float:left;
+    margin: 0px;   
+    padding: 15px 25px; 
+    border-right: #cccccc solid 1px;
+    height : 20px;
+}
+
+ul.taskbar > li:hover {    
+    background-color: #f4eaa3;
+    cursor: pointer;
+
+}
+
+ul.tasks {    
+    list-style-type: none;    
+}
+
+ul.tasks li {
+    float:right;
+    border : 0px;
+    border-left: #cccccc solid 1px;    
+}
+
+ul.tasks li:hover {
+    cursor: pointer;
+}
+
+#badgeTasks {   
+    background-color: #6699ff;
+    border-radius: 50%;
+    padding: 2px 6px;
+    color: white;
+}
+
+#badgeTasks.inwork {    
     background-color: #339900;
 }
 
@@ -29,39 +79,126 @@ body {
 .leftpane {
     display: inline-block;
     width: 50%;    
-    float:left;  
+    float: left;  
     overflow-y: scroll;
 }
 .rightpane {
     display: inline-block;    
-    width: 50%;
-    border-left: 2px solid gray;
+    width: 49%;
+    border-left: 1px solid #cccccc;
     overflow-y: scroll;
 }
 
-.footer {
-    border-top: 2px solid gray;
-    background-color: #f8efc0;
-}
 
 tr.item{
 
 }
 
-tr.selected {
-    background-color: #f8efc0;
-}
+
 
 table.panetable {
     border-collapse: collapse;
-    /*border: #339900 dashed thick;*/
+    width: 100%;
 }
 
-table.panetable tr {
-    border-bottom: #339900 solid thin;    
-    
+table.panetable th, td {
+    border-bottom: #cccccc solid thin;    
+    height : 25px;
+    padding: 5px;
+    text-align: left;
 }
 
 table.panetable thead{
     font-style:initial;
 }
+
+table.panetable a {
+    color : #6699ff;
+    text-decoration: none;
+}
+
+table.panetable tr.selected {
+    background-color: #f8efc0;
+}
+
+#popupTasks {
+    position: fixed;
+    display: none;
+    bottom: 80px;
+    right: 0px;
+    height: 400px;
+    width: 300px;
+    background-color: #e5e5ff;
+    padding: 5px;
+    border: #cccccc 1px solid;
+
+}
+
+.dialog {
+    position: fixed;
+    display: none;    
+    z-index: 50;    
+    bottom: 60%;    
+    right: 40%;
+    height: 250px;
+    width: 500px;
+    background-color: #f2f2f2;
+    /*padding: 5px;*/
+    border: #cccccc 1px solid;
+    border-radius: 6px;
+}
+
+.dlg-create {
+    height: 200px;
+}
+
+.dialog-caption {     
+    border-bottom: #cccccc 1px solid;
+    padding: 3px 7px;
+    background-color: #dbdbff;
+    font-weight: bold;
+}
+
+.dialog-content {     
+    padding: 20px 7px;    
+}
+
+.dialog-content input[type="text"]{     
+    width: 99%;
+}
+
+.dialog-buttons ul { 
+    bottom: 0px;
+    position: absolute;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;    
+    border-top: 1px solid #cccccc;
+    background-color: #f2f2f2;
+}
+
+.dialog-buttons li {
+    float:left;
+    margin: 0px;   
+    padding: 15px 25px; 
+    border-right: #cccccc solid 1px;
+    /*height : 20px;*/
+}
+
+.dialog-buttons li:hover {
+    background-color: #f4eaa3;
+    cursor: pointer;
+}
+
+#hideAll {
+    z-index: 49;
+    display: none;
+    position:fixed; 
+    height: 100%; 
+    width: 100%; 
+    bottom:0px; 
+    right:0px; 
+    background-color: rgba(0,0,0,0.3);
+}
+
