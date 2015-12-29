@@ -5,7 +5,6 @@ import com.google.gson.Gson;
 import com.sp1d.remoteexplorer.AppService;
 import com.sp1d.remoteexplorer.AppService.Pane;
 import com.sp1d.remoteexplorer.json.DirectoryListing;
-import com.sp1d.remoteexplorer.json.Tasks;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

@@ -67,14 +67,6 @@ ul.tasks li:hover {
     background-color: #339900;
 }
 
-.refolder {
-    color : #ff9900;
-}
-
-.refile {
-    color: #cccccc;
-}
-
 
 .leftpane {
     display: inline-block;
@@ -90,9 +82,7 @@ ul.tasks li:hover {
 }
 
 
-tr.item{
 
-}
 
 
 
@@ -120,6 +110,14 @@ table.panetable a {
 table.panetable tr.selected {
     background-color: #f8efc0;
 }
+
+table.panetable td {
+    padding: 4px 5px;
+    height: 32px;
+    vertical-align: middle;
+    margin: 0px;
+}
+
 
 #popupTasks {
     position: fixed;
@@ -202,3 +200,10 @@ table.panetable tr.selected {
     background-color: rgba(0,0,0,0.3);
 }
 
+.icon {
+    height: 32px;
+    vertical-align: middle;
+    /*float: right;*/
+
+
+}

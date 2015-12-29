@@ -3,14 +3,20 @@ package com.sp1d.remoteexplorer;
 import com.sp1d.remoteexplorer.json.Tasks;
 import com.google.gson.Gson;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -28,21 +34,24 @@ public class AppService {
     public static Path rootPath;
     public static String SEPARATOR;
 
-    public Path leftPath, rightPath;
+//    public Path leftPath, rightPath;
     public Map<Pane, Path> panePaths = new HashMap<>();
+    public Set<String> icons;
+
     static PathMatcher pm;
     static Gson gson = new Gson();
 
-    Logger log = LogManager.getLogger(AppService.class);
+    private static Logger log = LogManager.getLogger(AppService.class);
+    private HttpSession session;
 
     public enum Pane {
 
         LEFT, RIGHT, BOTH;
     }
 
-    public AppService() {
+    public AppService(HttpSession session) {
+        this.session = session;
         SEPARATOR = FileSystems.getDefault().getSeparator();
-
         try {
             rootPath = Paths.get(ROOT_PATH_STRING);
             String convertedPath = SEPARATOR.equals("\\")
@@ -55,6 +64,16 @@ public class AppService {
                     : "regex:" + convertedPath + s + ".*";
 
             pm = FileSystems.getDefault().getPathMatcher(pattern);
+
+            Pattern patIcon = Pattern.compile(".*[\\/\\\\](.+)\\.png");
+            icons = new HashSet<>();
+            for (String str : session.getServletContext().getResourcePaths("/static/icons/32px/")) {
+                Matcher matchIcon = patIcon.matcher(str);
+                if (matchIcon.matches()) {
+                    icons.add(matchIcon.group(1));                    
+                }
+            }
+
         } catch (InvalidPathException e) {
             log.fatal("Root path is incorrect", e);
             throw e;
@@ -65,22 +84,30 @@ public class AppService {
     }
 
     /*
- * Создает или возвращает экземпляр указанного в параметрах класса, доступный, как атрибут сессии
- * Singleton
+  Создает или возвращает экземпляр указанного в параметрах класса, доступный, как атрибут сессии
+  Singleton
      */
     public static <T> T inst(HttpSession sess, Class clazz) {
         T inst = (T) sess.getAttribute(clazz.getSimpleName());
         if (inst == null) {
             try {
-                if (clazz.equals(TaskExecutionService.class) || clazz.equals(Tasks.class)) {
-                    inst = (T) clazz.getConstructor(HttpSession.class).newInstance(sess);
+                Constructor<T> constructor = null;
+                try {
+                    constructor = clazz.getConstructor(HttpSession.class);
+                } catch (NoSuchMethodException | SecurityException e) {
+                    log.error(e);
+//                  Раз нет такого конструктора, попробуем вызвать другой, без аргументов
+                }
+
+//                if (clazz.equals(TaskExecutionService.class) || clazz.equals(Tasks.class)) {
+                if (constructor != null) {
+                    inst = (T) constructor.newInstance(sess);
                 } else {
                     inst = (T) clazz.newInstance();
                 }
                 sess.setAttribute(clazz.getSimpleName(), inst);
-            } catch (InstantiationException | IllegalAccessException |
-                    NoSuchMethodException | InvocationTargetException ex) {
-
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
+                log.error(e);                
             }
         }
         return inst;
