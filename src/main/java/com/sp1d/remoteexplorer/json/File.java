@@ -11,16 +11,9 @@ public class File {
     String date;
     String size;
     String perm;
+    String icon;
 
     public File() {
-    }
-
-    
-    public File(String filename) {
-        this.name = filename;
-        date = "01/01/1970";
-        size = "15M";
-        perm = "rwxrwxrwx";
     }
     
     public File addName(String name){
@@ -40,6 +33,11 @@ public class File {
     
     public File addPerm(String perm){
         this.perm = perm;
+        return this;
+    }
+    
+    public File addIcon(String icon){
+        this.icon = icon;
         return this;
     }
 

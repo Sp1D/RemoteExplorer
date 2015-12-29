@@ -3,6 +3,8 @@ package com.sp1d.remoteexplorer.json;
 import com.sp1d.remoteexplorer.AppService;
 import com.sp1d.remoteexplorer.AppService.Pane;
 import java.io.IOException;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -22,7 +24,7 @@ import org.apache.logging.log4j.Logger;
 
 /**
  * Класс предназначен для формирования JSON сообщения, формируемого из
- * экземпляра. Содержит листинг файлов некоей директории
+ * экземпляра. Содержит листинг файлов некоей директории.
  *
  * @author sp1d
  */
@@ -97,7 +99,9 @@ public class DirectoryListing {
                     LocalDateTime ldt = LocalDateTime.ofInstant(attr.lastModifiedTime().toInstant(), ZoneId.systemDefault());
                     return ldt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
                 case SIZE:
-                    return attr.isDirectory() ? "&lt;DIR&gt;" : String.valueOf(attr.size()) + " b";
+                    
+                    return attr.isDirectory() ? "&lt;DIR&gt;" : String.format("%,d",attr.size()) + " B";
+                    
                 case ATTRIBUTES:
                     if (posix) {
                         return PosixFilePermissions.toString(Files.getPosixFilePermissions(path));
@@ -123,6 +127,20 @@ public class DirectoryListing {
             return "";
         }
     }
+    
+    private String getIcon(Path path) {
+        String filename = path.getFileName().toString();
+        sb.append(filename.substring(filename.lastIndexOf(".")+1));
+        String result;
+        if (as.icons.contains(sb.toString())) {
+            result = sb.append(".png").toString().intern();
+            sb.delete(0, sb.length());
+            return result;
+        } else {
+            sb.delete(0, sb.length());
+            return "_blank.png".intern();
+        }
+    }
 
     /*
       Добавляет Path к листингу
@@ -133,7 +151,8 @@ public class DirectoryListing {
                 .addName(pf(path, Info.FILENAME))
                 .addDate(pf(path, Info.DATE))
                 .addSize(pf(path, Info.SIZE))
-                .addPerm(pf(path, Info.ATTRIBUTES)));
+                .addPerm(pf(path, Info.ATTRIBUTES))
+                .addIcon(getIcon(path)));
 
     }
 

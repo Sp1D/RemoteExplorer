@@ -27,7 +27,6 @@ function check() {
 
 
 
-
 function parseContent(data, status, xhr) {
     var pane = data.pane;
 
@@ -44,35 +43,31 @@ function parseContent(data, status, xhr) {
 
     $.each(data.list, function (k, file) {
         var fileString;
+        var html;
         var separator = data.separator;
 
 //      It is link to parent dir ("..") 
         if (file.size.toString() === '&lt;PARENT&gt;') {
             fileString = '<a href="#" onclick="changedir(&apos;..&apos;,&apos;' + pane + '&apos;)">..</a>';
-//                Write new content
-            var html = '<tr class="item" onclick="clickchoose(this,&apos;' + pane + '&apos;)"><td class="path" colspan="4">' + fileString + '</td>' +
+            html = '<tr class="item" onclick="clickchoose(this,&apos;' + pane + '&apos;)"><td colspan="4">' + fileString + '</td>' +
                     '</tr>';
-            $('#' + pane + 'body').append(html);
 
         } else {
 
 //      It is directory. Will show with <a> link
             if (file.size.toString() === '&lt;DIR&gt;') {
-                fileString = '<span class="glyphicon glyphicon-folder-close refolder" aria-hidden="true" "/>&nbsp;<a href="#" onclick="changedir(\'' + escape(file.name) + '\',\'' + pane + '\')">' + file.name + '</a>';
+                fileString = '&nbsp;<a href="#" onclick="changedir(\'' + escape(file.name) + '\',\'' + pane + '\')">' + file.name + '</a>';
             }
-
 //        Or regular FILE
-            else
-                fileString = '<span class="glyphicon glyphicon-file refile" aria-hidden="true"/>&nbsp;' + file.name;
-
-//                Write new content                
-            var html = '<tr class="item" onclick="clickchoose(this,&apos;' + pane + '&apos;)"><td class="path">' + fileString + '</td>' +
+            else {
+                fileString = '<img src="static/icons/32px/' + file.icon + '" class="icon"/>&nbsp;' + file.name;
+            }
+            html = '<tr onclick="clickchoose(this,&apos;' + pane + '&apos;)"><td class="path">' + fileString + '</td>' +
                     '<td>' + file.size + '</td>' +
                     '<td>' + file.date + '</td>' +
                     '<td>' + file.perm + '</td></tr>';
-            $('#' + pane + 'body').append(html);
-
         }
+        $('#' + pane + 'body').append(html);
     });
 }
 
@@ -229,7 +224,7 @@ $(function () {
         $('#hideAll').hide();
     });
 
-    $('.btnCancel').click(function () {        
+    $('.btnCancel').click(function () {
         $('.dialog').hide();
         $('#hideAll').hide();
     });
