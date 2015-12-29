@@ -3,13 +3,10 @@ package com.sp1d.remoteexplorer.json;
 import com.sp1d.remoteexplorer.AppService;
 import com.sp1d.remoteexplorer.AppService.Pane;
 import java.io.IOException;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.DosFileAttributes;
-import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -38,7 +35,7 @@ public class DirectoryListing {
 
     private final transient AppService as;
     private transient List<Path> tempList;
-    private transient Logger log = LogManager.getLogger(DirectoryListing.class);
+    private transient Logger LOG = LogManager.getLogger(DirectoryListing.class);
     private transient StringBuilder sb = new StringBuilder();
 
     enum Info {
@@ -86,7 +83,7 @@ public class DirectoryListing {
                 attrDos = Files.readAttributes(path, DosFileAttributes.class);
                 attr = attrDos;
             } else {
-                log.fatal("Filesystem is not supported");
+                LOG.fatal("Filesystem is not supported");
                 throw new IOException("Filesystem is not supported".intern());
             }
 

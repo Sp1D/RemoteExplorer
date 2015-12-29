@@ -37,9 +37,9 @@ public class Tasks {
     }
     
     public Tasks(HttpSession session) {
-        this.tasks = new CopyOnWriteArrayList<Task>();
+        this.tasks = new CopyOnWriteArrayList<>();
         this.finished = new ArrayBlockingQueue<>(5);        
-        this.errors = new CopyOnWriteArraySet<Task>();
+        this.errors = new CopyOnWriteArraySet<>();
         gson = new Gson();
         tes = AppService.inst(session, TaskExecutionService.class);        
     }

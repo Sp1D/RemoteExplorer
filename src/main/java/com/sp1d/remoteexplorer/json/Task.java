@@ -1,23 +1,20 @@
-
 package com.sp1d.remoteexplorer.json;
 
-
-import com.sp1d.remoteexplorer.AppService;
 import com.sp1d.remoteexplorer.AppService.Pane;
 import com.sp1d.remoteexplorer.TaskExecutionService.ErrorType;
 import com.sp1d.remoteexplorer.json.Tasks.TaskType;
-
 import java.nio.file.Path;
 import java.util.Objects;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- *  Класс формирует объект задачи (копирования, удаления и т.д.), который передается
- * по цепочке исполнителей и после возращается с установленным значением поля
- * error (которое ссылается на null после формирования конструктором)
- * 
+ * Класс формирует объект задачи (копирования, удаления и т.д.), который
+ * передается по цепочке исполнителей и после возращается с установленным
+ * значением поля error (которое ссылается на null после формирования
+ * конструктором)
+ *
  * Также используется для формирования объекта JSON
- * 
+ *
  * @author sp1d
  */
 public class Task {
@@ -25,116 +22,82 @@ public class Task {
     private TaskType type;
     private ErrorType error;
 //    From and To in string for json 
-   private String f, t;
+    private String f, t;
 
 //    Source path in copy, move operations. Source panel (left or right) in create and delete operations
     private transient Path from;
 
 //    Destination path in copy, move, create, delete operations
     private transient Path to;
-    
+
     private final transient long creationTime;
     private final static transient String RESTRICTED_CHARS_POSIX = "(\\n|\\r|\\\\|\\/)";
 
-        
     public Task(TaskType type, HttpServletRequest req, Path lePanePath, Path riPanePath) {
         this.type = type;
-        if (type == TaskType.COPY) {
-            initCopyTask(type, req, lePanePath, riPanePath);
-        } else if (type == TaskType.MOVE) {
-            initMoveTask(type, req, lePanePath, riPanePath);
-        } else if (type == TaskType.CREATE) {
-            initCreateTask(type, req, lePanePath, riPanePath);
-        } else if (type == TaskType.DELETE) {
-            initDeleteTask(type, req, lePanePath, riPanePath);
-        } 
-        
+
+        switch (type) {
+            case COPY:
+                initCopyMoveTask(type, req, lePanePath, riPanePath);
+                break;
+            case MOVE:
+                initCopyMoveTask(type, req, lePanePath, riPanePath);
+                break;
+            case CREATE:
+                initCreateDeleteTask(type, req, lePanePath, riPanePath);
+                break;
+            case DELETE:
+                initCreateDeleteTask(type, req, lePanePath, riPanePath);
+                break;
+        }
         creationTime = System.currentTimeMillis();
         this.f = from != null ? from.toString() : "";
         this.t = to != null ? to.toString() : "";
     }
-/*
- * Формирует Task типа COPY
- */
-    private void initCopyTask(TaskType type, HttpServletRequest req, Path lePanePath, Path riPanePath) {
-        Path copyFrom = null, copyTo = null;
+
+    private void initCopyMoveTask(TaskType type, HttpServletRequest req, Path lePanePath, Path riPanePath) {
+        Path fromL = null, toL = null;
 
         if (req.getParameter("to").equalsIgnoreCase(Pane.RIGHT.toString())) {
-            copyTo = riPanePath;
-            copyFrom = lePanePath.resolve(req.getParameter("from"));
+            toL = riPanePath;
+            fromL = lePanePath.resolve(req.getParameter("from"));
         } else if (req.getParameter("to").equalsIgnoreCase(Pane.LEFT.toString())) {
-            copyTo = lePanePath;
-            copyFrom = riPanePath.resolve(req.getParameter("from"));
+            toL = lePanePath;
+            fromL = riPanePath.resolve(req.getParameter("from"));
         }
 
-        if (copyFrom == null || copyTo == null || !copyTo.toFile().isDirectory()) {
+        if (fromL == null || toL == null || !toL.toFile().isDirectory()) {
             return;
         }
-        copyTo = copyTo.resolve(copyFrom.getFileName());
-        
-        this.from = copyFrom;
-        this.to = copyTo;
+        toL = toL.resolve(fromL.getFileName());
+
+        this.from = fromL;
+        this.to = toL;
     }
-  /*
- * Формирует Task типа MOVE
- */  
-    private void initMoveTask(TaskType type, HttpServletRequest req, Path lePanePath, Path riPanePath) {
-        Path moveFrom = null, moveTo = null;
 
-        if (req.getParameter("to").equalsIgnoreCase("right")) {
-            moveTo = riPanePath;
-            moveFrom = lePanePath.resolve(req.getParameter("from"));
-        } else if (req.getParameter("to").equalsIgnoreCase("left")) {
-            moveTo = lePanePath;
-            moveFrom = riPanePath.resolve(req.getParameter("from"));
+    private void initCreateDeleteTask(TaskType type, HttpServletRequest req, Path lePanePath, Path riPanePath) {
+        Path localTo = null;
+
+        String filename;
+        if (type == TaskType.CREATE) {
+            filename = req.getParameter("to").replaceAll(RESTRICTED_CHARS_POSIX, "_");
+        } else {
+            filename = req.getParameter("to");
         }
 
-        if (moveFrom == null || moveTo == null || !moveTo.toFile().isDirectory()) {
-            return;
-        }
-        moveTo = moveTo.resolve(moveFrom.getFileName());
-        
-        this.from = moveFrom;
-        this.to = moveTo;
-    }
-/*
- * Формирует Task типа CREATE
- */
-    private void initCreateTask(TaskType type, HttpServletRequest req, Path lePanePath, Path riPanePath) {
-        Path createPath = null;
-
-        String filename = req.getParameter("to").replaceAll(RESTRICTED_CHARS_POSIX, "_");
-
-        if (req.getParameter("from").equalsIgnoreCase("right")) {
-            createPath = riPanePath.resolve(filename);
-        } else if (req.getParameter("from").equalsIgnoreCase("left")) {
-            createPath = lePanePath.resolve(filename);
+        if (req.getParameter("from").equalsIgnoreCase(Pane.RIGHT.toString())) {
+            localTo = riPanePath.resolve(filename);
+        } else if (req.getParameter("from").equalsIgnoreCase(Pane.LEFT.toString())) {
+            localTo = lePanePath.resolve(filename);
         }
 
-        if (createPath == null) {
+        if (localTo == null) {
             return;
         }
 
-        this.to = createPath;
+        this.to = localTo;
     }
-/*
- * Формирует Task типа DELETE
- */
-    private void initDeleteTask(TaskType type, HttpServletRequest req, Path lePanePath, Path riPanePath) {
-        Path deleteFrom = null;
-        
-        if (req.getParameter("from").equalsIgnoreCase("right")) {
-            deleteFrom = riPanePath.resolve(req.getParameter("to"));
-        } else if (req.getParameter("from").equalsIgnoreCase("left")) {
-            deleteFrom = lePanePath.resolve(req.getParameter("to"));
-        }
-
-        if (deleteFrom == null) {
-            return;
-        }
-        this.to = deleteFrom;        
-    }
-
+   
     public TaskType getType() {
         return type;
     }
@@ -145,7 +108,7 @@ public class Task {
 
     public void setError(ErrorType error) {
         this.error = error;
-    }          
+    }
 
     public Path getFrom() {
         return from;
@@ -179,7 +142,5 @@ public class Task {
         }
         return true;
     }
-
-    
 
 }

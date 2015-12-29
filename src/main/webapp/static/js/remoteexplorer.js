@@ -9,13 +9,24 @@ var tasks = 0;
 
 
 function check() {
-    $.getJSON('tasks', function (data) {
+    $.getJSON(contextPath + '/tasks', function (data) {
         if (data.count < tasks) {
             getContent('left');
             getContent('right');
         }
         tasks = data.count;
         $('#badgeTasks').text(tasks);
+        $('#popupTasks').html("");
+        $.each(data.finished, function (i, task) {
+            $('#popupTasks').append('<div class="popTask popTaskFinished">FINISHED '
+                    + task.type + '&nbsp;' + task.f + ' -> ' + task.t
+                    + '</div>');
+        });
+        $.each(data.tasks, function (i, task) {
+            $('#popupTasks').append('<div class="popTask">RUNNING '
+                    + task.type + '&nbsp;' + task.f + ' -> ' + task.t
+                    + '</div>');
+        });
     });
     if (tasks > 0) {
         setTimeout(check, 500);
@@ -60,7 +71,7 @@ function parseContent(data, status, xhr) {
             }
 //        Or regular FILE
             else {
-                fileString = '<img src="static/icons/32px/' + file.icon + '" class="icon"/>&nbsp;' + file.name;
+                fileString = '<img src="' + contextPath + '/static/icons/32px/' + file.icon + '" class="icon"/>&nbsp;' + file.name;
             }
             html = '<tr onclick="clickchoose(this,&apos;' + pane + '&apos;)"><td class="path">' + fileString + '</td>' +
                     '<td>' + file.size + '</td>' +

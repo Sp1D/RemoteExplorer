@@ -81,7 +81,9 @@
         </ul>
 
         <div id="popupTasks">
-
+            <div class="popTask">Copy&nbsp;/tmp/fake -> /tmp/anotherfake</div>
+            <div class="popTask">Move&nbsp;/tmp/verylongdirectoryname/anotherdirectoryname/nonexistingfile.jpg -> /tmp/newdirectory</div>
+            <div class="popTask popTaskFinished">Create&nbsp;/tmp/null</div>            
         </div>
 
         <div id="dlgCreate" class="dialog dlg-create">
@@ -91,7 +93,7 @@
             <div class="dialog-content">
                 <form>
                     <label>Directory name:<br>
-                        <input type="text" id="dirname" autofocus="true"/>
+                        <input type="text" id="dirname"/>
                     </label>                
                 </form>
             </div>

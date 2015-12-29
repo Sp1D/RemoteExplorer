@@ -1,12 +1,10 @@
 package com.sp1d.remoteexplorer;
 
-import com.sp1d.remoteexplorer.json.Tasks;
 import com.google.gson.Gson;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.FileSystems;
-import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
@@ -30,7 +28,7 @@ import org.apache.logging.log4j.Logger;
  */
 public class AppService {
 
-    public static final String ROOT_PATH_STRING = "c:\\temp";
+    public static final String ROOT_PATH_STRING = "/tmp";
     public static Path rootPath;
     public static String SEPARATOR;
 
@@ -41,7 +39,7 @@ public class AppService {
     static PathMatcher pm;
     static Gson gson = new Gson();
 
-    private static Logger log = LogManager.getLogger(AppService.class);
+    private static final Logger LOG = LogManager.getLogger(AppService.class);
     private HttpSession session;
 
     public enum Pane {
@@ -75,10 +73,10 @@ public class AppService {
             }
 
         } catch (InvalidPathException e) {
-            log.fatal("Root path is incorrect", e);
+            LOG.fatal("Root path is incorrect", e);
             throw e;
         } catch (IllegalArgumentException | UnsupportedOperationException e) {
-            log.fatal("Pathmatcher's pattern is wrong", e);
+            LOG.fatal("Pathmatcher's pattern is wrong", e);
             throw e;
         }
     }
@@ -94,9 +92,10 @@ public class AppService {
                 Constructor<T> constructor = null;
                 try {
                     constructor = clazz.getConstructor(HttpSession.class);
-                } catch (NoSuchMethodException | SecurityException e) {
-                    log.error(e);
+                } catch (NoSuchMethodException e) {                    
 //                  Раз нет такого конструктора, попробуем вызвать другой, без аргументов
+                } catch (SecurityException e) {
+                    LOG.error(e);                    
                 }
 
 //                if (clazz.equals(TaskExecutionService.class) || clazz.equals(Tasks.class)) {
@@ -107,7 +106,7 @@ public class AppService {
                 }
                 sess.setAttribute(clazz.getSimpleName(), inst);
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                log.error(e);                
+                LOG.fatal(e);
             }
         }
         return inst;
@@ -137,7 +136,7 @@ public class AppService {
                     }
                 }
             } catch (InvalidPathException e) {
-                log.debug("Unresolvable path " + p, e);
+                LOG.debug("Unresolvable path given: " + p, e);
                 return rootPath;
             }
         }

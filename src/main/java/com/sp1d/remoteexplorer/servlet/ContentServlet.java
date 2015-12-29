@@ -14,6 +14,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * Возвращает содержимое панели, указанной в качестве параметра запроса (right или
@@ -25,11 +27,13 @@ public class ContentServlet extends HttpServlet {
 
     private static final long serialVersionUID = -5750499331621265964L;
     private static final Gson gson = new Gson();
+    private static final Logger LOG = LogManager.getLogger(ContentServlet.class);
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        LOG.debug("Entering servlet CONTENT for {}",req.getQueryString());
+        
         AppService as = AppService.inst(req.getSession(), AppService.class);
-
         DirectoryListing listing = null;
         List<Path> set = new LinkedList<Path>();
         
@@ -45,8 +49,7 @@ public class ContentServlet extends HttpServlet {
             listing = new DirectoryListing(req.getSession(), Pane.LEFT, set);
         }        
 
-        if (listing != null) { 
-                        
+        if (listing != null) {             
             as.sendJSON(resp, gson.toJson(listing));
         }
     }

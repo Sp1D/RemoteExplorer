@@ -1,7 +1,6 @@
 package com.sp1d.remoteexplorer;
 
 import com.sp1d.remoteexplorer.json.Task;
-import com.sp1d.remoteexplorer.json.Tasks.TaskType;
 import java.io.IOException;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileAlreadyExistsException;
@@ -14,6 +13,8 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import javax.servlet.http.HttpSession;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  *  Занимается непосредственно запуском задач по копированию, перемещению, удалению
@@ -22,6 +23,7 @@ import javax.servlet.http.HttpSession;
  */
 public class TaskExecutionService {
     private final ExecutorCompletionService ecs;
+    private final static Logger LOG = LogManager.getLogger(TaskExecutionService.class);
     
 
     public enum ErrorType {
@@ -29,11 +31,15 @@ public class TaskExecutionService {
     }
 
     public TaskExecutionService(HttpSession session) {
+        LOG.debug("New instance initialized");
         ecs = new ExecutorCompletionService(Executors.newSingleThreadExecutor());        
     }
 
     public void addTask(Task task) {
-        ecs.submit(newCallable(task));
+        LOG.debug("New task added for execution, {} from {} to {}",task.getType(),
+                task.getFrom(), task.getTo());
+//        ecs.submit(newCallable(task));
+        ecs.submit(new taskCallable(task));
     }
 /*
  * Собирает и возвращает у ExecutorCompletionService список завершенных заданий
@@ -52,26 +58,9 @@ public class TaskExecutionService {
                 } else break;
             } 
         } catch (ExecutionException | InterruptedException e) {
+            LOG.debug("Gathering tasks job is interrupted", e);
         }
         return tasks;
-    }
-    
-    /*
-     * Фабрика объектов Callable
-     */
-
-    private Callable<Task> newCallable(Task task) {
-        if (task.getType() == TaskType.COPY) {
-            return new copyCallable(task);
-        } else if (task.getType() == TaskType.MOVE) {
-            return new moveCallable(task);
-        } else if (task.getType() == TaskType.DELETE) {
-            return new deleteCallable(task);
-        } else if (task.getType() == TaskType.CREATE) {
-            return new createCallable(task);
-        } else {
-            return null;
-        }
     }
     
     private Task setError(Task task, IOException exception) {
@@ -86,19 +75,28 @@ public class TaskExecutionService {
             return task;
         }
     }
-
-    class copyCallable implements Callable<Task> {
+    
+    class taskCallable implements Callable<Task> {
 
         private Task task;
 
-        copyCallable(Task task) {
+        taskCallable(Task task) {
             this.task = task;
         }
 
         @Override
         public Task call() throws Exception {
             try {
-                Files.copy(task.getFrom(), task.getTo());
+                switch (task.getType()) {
+                    case COPY : Files.copy(task.getFrom(), task.getTo());
+                        break;
+                    case MOVE : Files.move(task.getFrom(), task.getTo());
+                        break;
+                    case DELETE : Files.delete(task.getTo());
+                        break;
+                    case CREATE : Files.createDirectory(task.getTo());
+                        break;
+                }
                 task.setError(ErrorType.NOERROR);
             } catch (IOException e) {
                 task = setError(task, e);
@@ -108,70 +106,4 @@ public class TaskExecutionService {
         }
     }
     
-    class moveCallable implements Callable<Task> {
-
-        private Task task;
-
-        moveCallable(Task task) {
-            this.task = task;
-        }
-
-        @Override
-        public Task call() throws Exception {
-            try {
-                Files.move(task.getFrom(), task.getTo());
-                task.setError(ErrorType.NOERROR);
-            } catch (IOException e) {
-                task = setError(task, e);
-            }
-            finally {
-                return task;
-            }
-        }
-    }
-
-    class createCallable implements Callable<Task> {
-
-        private Task task;
-
-        createCallable(Task task) {
-            this.task = task;
-        }
-
-        @Override
-        public Task call() throws Exception {
-            try {
-                Files.createDirectory(task.getTo());
-                task.setError(ErrorType.NOERROR);
-            } catch (IOException e) {
-                task = setError(task, e);
-            } finally {
-                return task;
-            }
-        }
-    }
-
-    class deleteCallable implements Callable<Task> {
-
-        private Task task;
-
-        public deleteCallable(Task task) {
-            this.task = task;
-        }
-
-        @Override
-        public Task call() throws Exception {
-            try {
-                Files.delete(task.getTo());
-                task.setError(ErrorType.NOERROR);
-            } catch (IOException e) {
-                task = setError(task, e);
-            } finally {
-                return task;
-            }
-        }
-    }
-    
-    
-
 }

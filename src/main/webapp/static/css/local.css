@@ -12,7 +12,6 @@ body {
     margin: 0px;
     padding: 0px;
     padding-bottom: 50px; 
-
 }
 
 
@@ -114,22 +113,35 @@ table.panetable tr.selected {
 table.panetable td {
     padding: 4px 5px;
     height: 32px;
-    vertical-align: middle;
-    margin: 0px;
+    vertical-align: middle; 
 }
 
 
 #popupTasks {
     position: fixed;
     display: none;
-    bottom: 80px;
+    bottom: 50px;
     right: 0px;
     height: 400px;
     width: 300px;
-    background-color: #e5e5ff;
+    background-color: #f2f2f2;
     padding: 5px;
     border: #cccccc 1px solid;
+    border-top-left-radius: 7px;
+}
 
+.popTask {
+    width: 100%;
+    padding: 2px 0px;
+    border-bottom: #cccccc 1px solid;
+    font-size: smaller;
+    overflow-wrap: break-word;
+    overflow-x: auto;
+    color: #339900;
+}
+
+.popTaskFinished{
+    color : initial;
 }
 
 .dialog {
@@ -143,7 +155,7 @@ table.panetable td {
     background-color: #f2f2f2;
     /*padding: 5px;*/
     border: #cccccc 1px solid;
-    border-radius: 6px;
+    border-radius: 7px;
 }
 
 .dlg-create {
@@ -203,7 +215,5 @@ table.panetable td {
 .icon {
     height: 32px;
     vertical-align: middle;
-    /*float: right;*/
-
 
 }
