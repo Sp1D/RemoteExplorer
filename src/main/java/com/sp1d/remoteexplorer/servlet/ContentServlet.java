@@ -1,4 +1,3 @@
-
 package com.sp1d.remoteexplorer.servlet;
 
 import com.google.gson.Gson;
@@ -18,9 +17,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
- * Возвращает содержимое панели, указанной в качестве параметра запроса (right или
- * left) в виде сообщения JSON
- * 
+ * Возвращает содержимое панели, указанной в качестве параметра запроса (right
+ * или left) в виде сообщения JSON
+ *
  * @author sp1d
  */
 public class ContentServlet extends HttpServlet {
@@ -31,29 +30,35 @@ public class ContentServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        LOG.debug("Entering servlet CONTENT for {}",req.getQueryString());
-        
+        LOG.debug("Entering servlet CONTENT for {}", req.getQueryString());
+
         AppService as = AppService.inst(req.getSession(), AppService.class);
         DirectoryListing listing = null;
         List<Path> set = new LinkedList<Path>();
-        
+
         if (req.getParameter(Pane.RIGHT.toString().toLowerCase()) != null) {
-            for (Path path : Files.newDirectoryStream(as.panePaths.get(Pane.RIGHT))) {
-                set.add(path);
+            try {
+                for (Path path : Files.newDirectoryStream(as.panePaths.get(Pane.RIGHT))) {
+                    set.add(path);
+                }
+            } catch (IOException e) {
+                LOG.error("Wrong path {}", as.panePaths.get(Pane.RIGHT).toString());
             }
             listing = new DirectoryListing(req.getSession(), Pane.RIGHT, set);
         } else if (req.getParameter(Pane.LEFT.toString().toLowerCase()) != null) {
-            for (Path path : Files.newDirectoryStream(as.panePaths.get(Pane.LEFT))) {
-                set.add(path);
+            try {
+                for (Path path : Files.newDirectoryStream(as.panePaths.get(Pane.LEFT))) {
+                    set.add(path);
+                }
+            } catch (IOException e) {
+                LOG.error("Wrong path {}", as.panePaths.get(Pane.LEFT).toString());
             }
             listing = new DirectoryListing(req.getSession(), Pane.LEFT, set);
-        }        
+        }
 
-        if (listing != null) {             
+        if (listing != null) {
             as.sendJSON(resp, gson.toJson(listing));
         }
     }
-    
-    
 
 }

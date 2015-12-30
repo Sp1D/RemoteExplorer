@@ -16,7 +16,7 @@ function check() {
         }
         tasks = data.count;
         $('#badgeTasks').text(tasks);
-        $('#popupTasks').html("");
+        $('#popupTasks').html("");        
         $.each(data.finished, function (i, task) {
             $('#popupTasks').append('<div class="popTask popTaskFinished">FINISHED '
                     + task.type + '&nbsp;' + task.f + ' -> ' + task.t
@@ -240,7 +240,7 @@ $(function () {
         $('#hideAll').hide();
     });
 
-    $('ul.tasks li').click(function () {
+    $('ul.tasks li').click(function () {        
         $('#popupTasks').toggle();
     });
 });

@@ -28,7 +28,7 @@ import org.apache.logging.log4j.Logger;
  */
 public class AppService {
 
-    public static final String ROOT_PATH_STRING = "/tmp";
+    public static final String ROOT_PATH_STRING = "c:\\temp";
     public static Path rootPath;
     public static String SEPARATOR;
 
